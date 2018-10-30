@@ -66,19 +66,19 @@ SELECT
 ,SUM(Inventory_in_hand) Units_on_hand
 FROM
 (
-Select  
-a.WK_NBR
-,cast(a.locn_nbr as INT) as Store
+SELECT 
+a.wk_nbr
+,cast(a.locn_nbr AS INT) AS Store
 ,b.Prd_Irl_Nbr as Prd_Irl_No
-,SUM(a.TTL_UN_QT) as Inventory_in_hand
-from 
-ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS a
+,SUM(a.ttl_un_qt) as Inventory_in_hand
+FROM
+`syw-analytics-repo-prod.alex_arp_views_prd.fact_shc_wkly_opr_ins` a
 INNER JOIN 
-ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU b 
-ON a.SKU_ID = b.SKU_ID
-Where a.INS_TYP_CD in ('H') and a.INS_SUB_TYP_CD in ('A')  --filters to include only product considered On Hand and Available in a LOCN_NBR
-group by 1,2,3) A 
-LEFT  JOIN CBR_MART_TBLS.SYWR_SRS_SOAR_BU B on a.Prd_Irl_No = b.Prd_Irl_No
-LEFT  JOIN crm_mart1_tbls.crm_sears_retail_fty C ON a.Store=C.fty_id_no
+`syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku` b 
+ON a.sku_id = b.sku_id
+WHERE a.ins_typ_cd in ('H') and a.ins_sub_typ_cd in ('A')  --filters to include only product considered On Hand and Available in a LOCN_NBR
+GROUP BY 1,2,3) A 
+LEFT JOIN `syw-analytics-ff.adhoc_analysis.sywr_srs_soar_bu` B on a.Prd_Irl_No = b.Prd_Irl_No
+LEFT JOIN `syw-analytics-repo-prod.crm_mart1_tbls.crm_sears_retail_fty` C ON a.Store=C.fty_id_no
 WHERE b.soar_no IN (101,102,103,104,105) --Apparel BU
 GROUP BY 1,2,3,4,5,6
