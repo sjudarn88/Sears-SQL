@@ -1,0 +1,35 @@
+###select loyaltycardIDs which purchased Kmart-Deptment=195 in quarter 20181,20182,20183
+SELECT a1.LyltyCardNbr,a3.srsvrtclbsnss_kmtdvsn_nbr,a3.srskmtind
+   FROM
+    (SELECT LyltyCardNbr,KSNId,SrsKmtInd,SKUId
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` 
+      WHERE LyltyCardNbr IS NOT NULL 
+            AND SrsKmtInd='K' 
+            AND qtrnbr IN (20181, 20182, 20183)) a1
+    INNER JOIN
+    (SELECT KsnId
+            ,DeptNbr
+       FROM `syw-analytics-ff.Movers_pengyi.LuShcKsn` 
+      WHERE DeptNbr=195) a2
+    ON a1.KSNId=a2.KSNId INNER JOIN
+    (SELECT SrsSKU_KmtKSN_Id
+            ,srsvrtclbsnss_kmtdvsn_nbr
+            , srskmtind 
+        FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn`
+    ) a3
+    ON (COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a3.SrsSKU_KmtKSN_Id 
+        AND a1.SrsKmtInd = a3.SrsKmtInd
+#select those members who purchased other division/department/category/subcategory in the same quarters
+    LEFT JOIN
+    (SELECT KsnId
+            ,DeptNbr
+       FROM `syw-analytics-ff.Movers_pengyi.LuShcKsn` 
+      WHERE DeptNbr=195) a2
+
+           
+
+
+
+
+
+
