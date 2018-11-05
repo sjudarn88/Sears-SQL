@@ -1,27 +1,39 @@
 ###select loyaltycardIDs which purchased Kmart-Deptment=195 in quarter 20181,20182,20183
-SELECT a1.LyltyCardNbr,a2.srsvrtclbsnss_kmtdvsn_nbr,a2.srskmtind
-   FROM
-    (SELECT LyltyCardNbr,KSNId,SrsKmtInd,SKUId
-      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` 
-      WHERE LyltyCardNbr IS NOT NULL 
-            AND SrsKmtInd='K' 
-            AND qtrnbr IN (20181, 20182, 20183)) a1
-    INNER JOIN
-    (SELECT SrsSKU_KmtKSN_Id
-            , srskmtind 
-        FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn`
-        WHERE srsdvsn_kmtdept_nbr=195
-    ) a2
-    ON (COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
-        AND a1.SrsKmtInd = a2.SrsKmtInd
-#select those members who purchased other division/department/category/subcategory in the same quarters
-   
 
-SELECT srsdvsn_kmtdept_nbr, srsdvsn_kmtdept_desc, COUNT(1) AS cn
-FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn`
-WHERE srsdvsn_kmtdept_nbr=391
-GROUP BY 1,2
-ORDER BY cn ASC
+with dept_members_195 AS (
+   SELECT DISTINCT LyltyCardNbr
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` a1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` a2
+      ON COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
+         AND a1.SrsKmtInd = a2.SrsKmtInd
+      WHERE a1.LyltyCardNbr IS NOT NULL 
+            AND a1.SrsKmtInd='K' AND a1.UnitQty>0
+            AND a1.qtrnbr IN (20181, 20182, 20183)
+            AND a2.srsdvsn_kmtdept_nbr=195  
+    )
+#select those members who purchased other division/department/category/subcategory in the same quarters
+,member_trasaction_other_dept AS (
+    SELECT b1.LyltyCardNbr, b2.srsdvsn_kmtdept_nbr,b2.srsdvsn_kmtdept_desc,
+    b2.srsvrtclbsnss_kmtdvsn_nbr ,b2.srsvrtclbsnss_kmtdvsn_desc
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` b1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` b2
+      ON COALESCE((CASE WHEN b1.SrsKmtInd = 'S' THEN b1.SKUId else b1.KSNId end), 0) = b2.SrsSKU_KmtKSN_Id 
+         AND b1.SrsKmtInd = b2.SrsKmtInd
+      WHERE b1.LyltyCardNbr IS NOT NULL 
+            AND b1.SrsKmtInd='K' AND b1.UnitQty>0
+            AND b1.qtrnbr IN (20181, 20182, 20183)
+      GROUP BY 1,2,3,4,5
+    )
+    
+    SELECT srsvrtclbsnss_kmtdvsn_nbr,srsvrtclbsnss_kmtdvsn_desc,
+            srsdvsn_kmtdept_nbr,srsdvsn_kmtdept_desc, COUNT(a.LyltyCardNbr) AS member_count
+      FROM member_trasaction_other_dept a
+      INNER JOIN dept_members_195 b
+      ON a.LyltyCardNbr=b.LyltyCardNbr
+      GROUP BY 1,2,3,4
+
+      
+
 
            
 
