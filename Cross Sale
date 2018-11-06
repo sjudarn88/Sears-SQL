@@ -14,7 +14,8 @@ with dept_members_195 AS (
 #select those members who purchased other division/department/category/subcategory in the same quarters
 ,member_trasaction_other_dept AS (
     SELECT b1.LyltyCardNbr, b2.srsdvsn_kmtdept_nbr,b2.srsdvsn_kmtdept_desc,
-    b2.srsvrtclbsnss_kmtdvsn_nbr ,b2.srsvrtclbsnss_kmtdvsn_desc
+    b2.srsvrtclbsnss_kmtdvsn_nbr ,b2.srsvrtclbsnss_kmtdvsn_desc,
+    b2.srsline_kmtctgryclstr_nbr, b2.srsline_kmtctgryclstr_desc
       FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` b1
       INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` b2
       ON COALESCE((CASE WHEN b1.SrsKmtInd = 'S' THEN b1.SKUId else b1.KSNId end), 0) = b2.SrsSKU_KmtKSN_Id 
@@ -22,15 +23,18 @@ with dept_members_195 AS (
       WHERE b1.LyltyCardNbr IS NOT NULL 
             AND b1.SrsKmtInd='K' AND b1.UnitQty>0
             AND b1.qtrnbr IN (20181, 20182, 20183)
-      GROUP BY 1,2,3,4,5
+      GROUP BY 1,2,3,4,5,6,7
     )
     
-    SELECT srsvrtclbsnss_kmtdvsn_nbr,srsvrtclbsnss_kmtdvsn_desc,
-            srsdvsn_kmtdept_nbr,srsdvsn_kmtdept_desc, COUNT(a.LyltyCardNbr) AS member_count
+    SELECT srsvrtclbsnss_kmtdvsn_nbr,srsvrtclbsnss_kmtdvsn_desc
+            ,srsdvsn_kmtdept_nbr,srsdvsn_kmtdept_desc
+            ,srsline_kmtctgryclstr_nbr, srsline_kmtctgryclstr_desc
+            , COUNT(a.LyltyCardNbr) AS member_count
       FROM member_trasaction_other_dept a
       INNER JOIN dept_members_195 b
       ON a.LyltyCardNbr=b.LyltyCardNbr
-      GROUP BY 1,2,3,4
+      GROUP BY 1,2,3,4,5,6
+      ORDER BY member_count
 
       
 
