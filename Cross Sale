@@ -34,7 +34,7 @@ with dept_members_195 AS (
       INNER JOIN dept_members_195 b
       ON a.LyltyCardNbr=b.LyltyCardNbr
       GROUP BY 1,2,3,4,5,6
-      ORDER BY member_count
+      ORDER BY member_count DESC
 
       
 
