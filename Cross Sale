@@ -75,11 +75,79 @@ with dept_members_195 AS (
       ORDER BY member_count DESC
  
  
+==============================================Demographic Data===============================================
+ with dept_members_195 AS (
+   SELECT DISTINCT LyltyCardNbr,CASE WHEN a2.srsdvsn_kmtdept_nbr=195 THEN 1 ELSE 0 END AS categ
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` a1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` a2
+      ON COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
+         AND a1.SrsKmtInd = a2.SrsKmtInd
+      WHERE a1.LyltyCardNbr IS NOT NULL 
+            AND a1.SrsKmtInd='K' AND a1.UnitQty>0
+            AND a1.qtrnbr IN (20181, 20182, 20183)
+    )
+#select those members who purchased other division/department/category/subcategory in the same quarters
+,member_trasaction_other_dept AS (
+    SELECT b1.LyltyCardNbr, b2.srsdvsn_kmtdept_nbr,b2.srsdvsn_kmtdept_desc
+           ,b2.srsvrtclbsnss_kmtdvsn_nbr ,b2.srsvrtclbsnss_kmtdvsn_desc
+           #,b2.srsline_kmtctgryclstr_nbr, b2.srsline_kmtctgryclstr_desc
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` b1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` b2
+      ON COALESCE((CASE WHEN b1.SrsKmtInd = 'S' THEN b1.SKUId else b1.KSNId end), 0) = b2.SrsSKU_KmtKSN_Id 
+         AND b1.SrsKmtInd = b2.SrsKmtInd
+      WHERE b1.LyltyCardNbr IS NOT NULL 
+            AND b1.SrsKmtInd='K' AND b1.UnitQty>0
+            AND b1.qtrnbr IN (20181, 20182, 20183)
+      GROUP BY 1,2,3,4,5
+    )
+,with cnsmr_demo AS (
+   SELECT cnsmr_id,gndr_cd,age_cd,ROW_NUMBER() OVER (PARTITION BY cnsmr_id ORDER BY row_mod_ts DESC) AS rank
+     FROM `syw-analytics-repo-prod.cdi_dw_views.hshld_cnsmr` 
+    )
 
-      
 
-
+=======================================Buy BU still buy BU================================================
            
+ with dept_members AS (
+   SELECT LyltyCardNbr
+   ,CASE WHEN a2.srsvrtclbsnss_kmtdvsn_nbr IN (23,24,30,34,49) THEN 1 ELSE 0 END AS div
+   ,CASE WHEN a1.qtrnbr IN (20181, 20182) THEN 1 ELSE 0 END AS quarter
+   ,a1.unitqty,a1.netsellamt
+      
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` a1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` a2
+      
+      ON COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
+         AND a1.SrsKmtInd = a2.SrsKmtInd
+      WHERE a1.LyltyCardNbr IS NOT NULL 
+            AND a1.SrsKmtInd='K' AND a1.UnitQty>0
+            AND a1.qtrnbr IN (20181, 20182, 20183)
+    )
+,month_before AS(
+    SELECT 
+         LyltyCardNbr
+         ,SUM(CASE WHEN quarter=1 AND div=1 THEN netsellamt ELSE 0 END) AS amt_kids_6m
+         ,SUM(CASE WHEN quarter=1 THEN netsellamt ELSE 0 END) AS amt_total_6m
+         ,ROUND(SUM(CASE WHEN quarter=1 AND div=1 THEN netsellamt ELSE 0 END)/SUM(CASE WHEN quarter=1 THEN netsellamt ELSE 0 END),4) AS amt_pct
+         ,SUM(CASE WHEN quarter=1 AND div=1 THEN unitqty ELSE 0 END) AS unit_kids_6m
+         ,SUM(CASE WHEN quarter=1 THEN unitqty ELSE 0 END) AS unit_all_6m 
+         ,ROUND(SUM(CASE WHEN quarter=1 AND div=1 THEN unitqty ELSE 0 END)/SUM(CASE WHEN quarter=1 THEN unitqty ELSE 0 END),4) AS unit_pct
+      FROM 
+         dept_members
+      GROUP BY LyltyCardNbr
+    )
+,month_after AS(
+    SELECT LyltyCardNbr
+      FROM 
+         dept_members
+      WHERE 
+         quarter=0 AND div=1
+      GROUP BY LyltyCardNbr
+    )
+    
+    #SELECT  z1.LyltyCardNbr,NTILE(10) OVER(ORDER BY unit_all_6m DESC) AS Quartile  
+    SELECT z1.LyltyCardNbr,unit_kids_6m FROM month_before z1 LEFT JOIN month_after z2 ON z1.LyltyCardNbr=z2.LyltyCardNbr
+
 
 
 
