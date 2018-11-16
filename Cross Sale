@@ -112,7 +112,7 @@ with dept_members_195 AS (
    SELECT LyltyCardNbr
    ,CASE WHEN a2.srsvrtclbsnss_kmtdvsn_nbr IN (23,24,30,34,49) THEN 1 ELSE 0 END AS div
    ,CASE WHEN a1.qtrnbr IN (20181, 20182) THEN 1 ELSE 0 END AS quarter
-   ,a1.unitqty,a1.netsellamt
+   ,a1.unitqty,a1.netsellamt,a1.trandt
       
       FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` a1
       INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` a2
@@ -120,35 +120,63 @@ with dept_members_195 AS (
       ON COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
          AND a1.SrsKmtInd = a2.SrsKmtInd
       WHERE a1.LyltyCardNbr IS NOT NULL 
-            AND a1.SrsKmtInd='K' AND a1.UnitQty>0
+            AND a1.SrsKmtInd='K' AND a1.UnitQty>0 AND a1.netsellamt>0
             AND a1.qtrnbr IN (20181, 20182, 20183)
     )
 ,month_before AS(
     SELECT 
          LyltyCardNbr
          ,SUM(CASE WHEN quarter=1 AND div=1 THEN netsellamt ELSE 0 END) AS amt_kids_6m
-         ,SUM(CASE WHEN quarter=1 THEN netsellamt ELSE 0 END) AS amt_total_6m
-         ,ROUND(SUM(CASE WHEN quarter=1 AND div=1 THEN netsellamt ELSE 0 END)/SUM(CASE WHEN quarter=1 THEN netsellamt ELSE 0 END),4) AS amt_pct
+         ,SUM(CASE WHEN quarter=1 THEN netsellamt ELSE 0 END) AS amt_all_6m
          ,SUM(CASE WHEN quarter=1 AND div=1 THEN unitqty ELSE 0 END) AS unit_kids_6m
-         ,SUM(CASE WHEN quarter=1 THEN unitqty ELSE 0 END) AS unit_all_6m 
-         ,ROUND(SUM(CASE WHEN quarter=1 AND div=1 THEN unitqty ELSE 0 END)/SUM(CASE WHEN quarter=1 THEN unitqty ELSE 0 END),4) AS unit_pct
-      FROM 
+         ,SUM(CASE WHEN quarter=1 THEN unitqty ELSE 0 END) AS unit_all_6m
+         ,COUNT(DISTINCT trandt) as trans_cnt
+     FROM 
          dept_members
       GROUP BY LyltyCardNbr
     )
 ,month_after AS(
-    SELECT LyltyCardNbr
+    SELECT LyltyCardNbr,div
       FROM 
          dept_members
       WHERE 
-         quarter=0 AND div=1
-      GROUP BY LyltyCardNbr
+         quarter=0
+      GROUP BY LyltyCardNbr,div
     )
     
-    #SELECT  z1.LyltyCardNbr,NTILE(10) OVER(ORDER BY unit_all_6m DESC) AS Quartile  
-    SELECT z1.LyltyCardNbr,unit_kids_6m FROM month_before z1 LEFT JOIN month_after z2 ON z1.LyltyCardNbr=z2.LyltyCardNbr
-
-
+    SELECT quartile,COUNT(n1) AS cnt_before,COUNT(DISTINCT CASE WHEN div=1 THEN n2 ELSE NULL END) AS cnt_after,ROUND(avg(unit_kids_6m),4) as avg_unit_pct
+      FROM
+         (SELECT  z1.LyltyCardNbr as n1,NTILE(10) OVER(ORDER BY unit_kids_6m DESC) AS quartile,z2.LyltyCardNbr as n2
+                  ,unit_kids_6m,z1.trans_cnt,div,trans_cnt
+         FROM month_before z1 INNER JOIN month_after z2 ON z1.LyltyCardNbr=z2.LyltyCardNbr
+         WHERE z1.unit_kids_6m>0 AND trans_cnt
+         )
+    GROUP BY quartile
+    ORDER BY quartile ASC
+    
+======================================Trip Distribution=============================================
+with dept_members AS (
+ SELECT LyltyCardNbr
+   ,CASE WHEN a2.srsvrtclbsnss_kmtdvsn_nbr IN (23,24,30,34,49) THEN 1 ELSE 0 END AS div
+   ,CASE WHEN a1.qtrnbr IN (20181, 20182) THEN 1 ELSE 0 END AS quarter
+   ,a1.unitqty,a1.netsellamt,a1.trandt
+      
+      FROM `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` a1
+      INNER JOIN `syw-analytics-repo-prod.l2_enterpriseanalytics.merchlvl90skuandksn` a2
+      
+      ON COALESCE((CASE WHEN a1.SrsKmtInd = 'S' THEN a1.SKUId else a1.KSNId end), 0) = a2.SrsSKU_KmtKSN_Id 
+         AND a1.SrsKmtInd = a2.SrsKmtInd
+      WHERE a1.LyltyCardNbr IS NOT NULL 
+            AND a1.SrsKmtInd='K' AND a1.UnitQty>0 AND a1.netsellamt>0
+            AND a1.qtrnbr IN (20181, 20182, 20183)
+     )
+     
+     SELECT trans_cnt,COUNT(LyltyCardNbr) AS mem_cnt FROM
+            (SELECT LyltyCardNbr,COUNT(DISTINCT trandt) as trans_cnt FROM dept_members 
+               GROUP BY LyltyCardNbr
+            )
+        GROUP BY trans_cnt
+     
 
 
 
