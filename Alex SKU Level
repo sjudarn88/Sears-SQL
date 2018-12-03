@@ -113,7 +113,7 @@ from      (select  a11.SKU_ID  SKU_ID,
                                   on         (a11.SKU_ID = a14.SKU_ID)
                                 join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
                                   on         (a11.LOCN_NBR = a15.LOCN_NBR)
-                where   (a14.LN_ID in (7757, 4061)
+                where   (a14.LN_ID in (7757, 4061) ##only looking at 2 lines
                 and a12.CUST_TIME_ID in (2)
                 and (a13.GOB_IND in ('N                             ')
                 or a15.STR_OPER_CD in ('1'))
