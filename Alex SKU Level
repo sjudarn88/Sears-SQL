@@ -1,0 +1,543 @@
+SET QUERY_BAND= 'APP=MSTR;Project=ALEX3.0-Teradata;Report=SEARS LAST WEEK UNIFORMS;' FOR SESSION;
+ 
+select    a110.DIV_NBR  DIV_NBR,
+                max(a110.DIV_DESC)  DIV_DESC,
+                a110.LN_ID  LN_ID,
+                max(a110.DIV_NBR)  DIV_NBR0,
+                max(a110.LN_NBR)  LN_NBR,
+                max(a110.LN_DESC)  LN_DESC,
+                a110.SBL_ID  SBL_ID,
+                max(a110.SBL_DESC)  SBL_DESC0,
+                max(a110.SBL_NBR)  SBL_NBR,
+                a110.CLS_ID  CLS_ID,
+                max(a110.CLS_DESC)  CLS_DESC,
+                max(a110.CLS_NBR)  CLS_NBR,
+                a110.PRD_IRL_NBR  PRD_IRL_NBR,
+                max(a110.PRD_DESC)  PRD_DESC,
+                max(a110.DIV_NBR)  DIV_NBR1,
+                max(a110.ITM_NBR)  ITM_NBR0,
+                a114.KSN_ID  KSN_ID,
+                max(a116.KSN_DESC)  KSN_DESC,
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID)  SKU_ID,
+                max(a110.SKU_DESC)  SKU_DESC,
+                max(a110.DIV_NBR)  DIV_NBR2,
+                max(a110.ITM_NBR)  ITM_NBR1,
+                max(a110.SKU_NBR)  SKU_NBR,
+                coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR)  LOCN_NBR,
+                max(a115.LOCN_NM)  LOCN_NM,
+                a115.LOCN_ST_CD  LOCN_ST_CD,
+                max(pa111.SEARSLISTCOST)  SEARSLISTCOST,
+                max(pa111.SEARSLISTSELLPRICE)  SEARSLISTSELLPRICE,
+                max(pa12.SEARSTOTALSALES)  SEARSTOTALSALES,
+                max(pa12.SEARSTOTALSALESLY)  SEARSTOTALSALESLY,
+                max(pa12.SEARSTOTALSALESUNITS)  SEARSTOTALSALESUNITS,
+                max(pa12.SEARSTOTALSALESUNITSLY)  SEARSTOTALSALESUNITSLY,
+                max(pa13.WJXBFS1)  SEARSSTOREENDINGINVENTORYUNITS,
+                max(pa14.WJXBFS1)  SEARSSTOREENDINGINVENTORYUNIT1,
+                max(pa15.WJXBFS1)  SEARSDCENDINGINVENTORYUNITS,
+                max(pa16.WJXBFS1)  SEARSDCENDINGINVENTORYUNITSLY,
+                max(pa17.SEARSCOUNTOFSTORESWITHINVENTOR)  SEARSCOUNTOFSTORESWITHINVENTOR,
+                max(pa18.SEARSTOTALDCRECEIPTSUNITS)  SEARSTOTALDCRECEIPTSUNITS,
+                max(pa19.SEARSTOTALSTORERECEIPTSUNITS)  SEARSTOTALSTORERECEIPTSUNITS,
+                max(pa15.WJXBFS2)  SEARSCURRENTDCONORDERUNITS,
+                max(pa13.WJXBFS2)  SEARSCURRENTSTOREONORDERUNITS,
+                max(pa12.SEARSCOSTOFMDSESOLD)  SEARSCOSTOFMDSESOLD,
+                max(pa12.SEARSCOSTOFMDSESOLDLY)  SEARSCOSTOFMDSESOLDLY
+from      (select  a11.SKU_ID  SKU_ID,
+                                a11.LOCN_NBR  LOCN_NBR,
+                                sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.TY_CTR  end else NULL end))  SEARSTOTALSALES,
+                                sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.TY_CTR  end else NULL end))  SEARSTOTALSALESUNITS,
+                                sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.TY_CTR  end else NULL end))  SEARSCOSTOFMDSESOLD,
+                                sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESLY,
+                                sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESUNITSLY,
+                                sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.LY_CTR end else NULL end))  SEARSCOSTOFMDSESOLDLY
+                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY            a11
+                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                                  on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                where   (a14.LN_ID in (7757, 4061)
+                and a12.CUST_TIME_ID in (2)
+                and (a13.GOB_IND in ('N                             ')
+                or a15.STR_OPER_CD in ('1'))
+                and a11.TRS_TYP_CD in ('A', 'R', 'S')
+                and (a11.TYLY_DESC in ('TY')
+                or a11.TYLY_DESC in ('LY')))
+                group by              a11.SKU_ID,
+                                a11.LOCN_NBR
+                )              pa12
+                full outer join     (select  pa11.SKU_ID  SKU_ID,
+                                pa11.LOCN_NBR  LOCN_NBR,
+                                max(pa11.SEARSSTOREENDINGINVENTORYUNITS)  WJXBFS1,
+                                max(pa11.SEARSCURRENTSTOREONORDERUNITS)  WJXBFS2
+                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('N') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTSTOREONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                                                  on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                                where   (a14.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a13.GOB_IND in ('N                             ')
+                                or a15.STR_OPER_CD in ('1'))
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pa11
+                                join        (select  pc11.SKU_ID  SKU_ID,
+                                                pc11.LOCN_NBR  LOCN_NBR,
+                                                max(pc11.WK_NBR)  WJXBFS1
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('N') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTSTOREONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                                                  on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                                where   (a14.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a13.GOB_IND in ('N                             ')
+                                or a15.STR_OPER_CD in ('1'))
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pc11
+                                where   pc11.GODWFLAG8_1 = 1
+                                group by              pc11.SKU_ID,
+                                                pc11.LOCN_NBR
+                                )              pa12
+                                  on         (pa11.LOCN_NBR = pa12.LOCN_NBR and
+                                pa11.SKU_ID = pa12.SKU_ID and
+                                pa11.WK_NBR = pa12.WJXBFS1)
+                where   pa11.GODWFLAG8_1 = 1
+                group by              pa11.SKU_ID,
+                                pa11.LOCN_NBR
+                )              pa13
+                  on         (pa12.LOCN_NBR = pa13.LOCN_NBR and
+                pa12.SKU_ID = pa13.SKU_ID)
+                full outer join     (select  pa11.SKU_ID  SKU_ID,
+                                pa11.LOCN_NBR  LOCN_NBR,
+                                max(pa11.SEARSSTOREENDINGINVENTORYUNIT1)  WJXBFS1
+                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('N') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTSTOREONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                                                  on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                                where   (a14.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a13.GOB_IND in ('N                             ')
+                                or a15.STR_OPER_CD in ('1'))
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pa11
+                                join        (select  pc11.SKU_ID  SKU_ID,
+                                                pc11.LOCN_NBR  LOCN_NBR,
+                                                max(pc11.WK_NBR)  WJXBFS1
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('N') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTSTOREONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                                                  on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                                where   (a14.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a13.GOB_IND in ('N                             ')
+                                or a15.STR_OPER_CD in ('1'))
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pc11
+                                where   pc11.GODWFLAGb_1 = 1
+                                group by              pc11.SKU_ID,
+                                                pc11.LOCN_NBR
+                                )              pa12
+                                  on         (pa11.LOCN_NBR = pa12.LOCN_NBR and
+                                pa11.SKU_ID = pa12.SKU_ID and
+                                pa11.WK_NBR = pa12.WJXBFS1)
+                where   pa11.GODWFLAGb_1 = 1
+                group by              pa11.SKU_ID,
+                                pa11.LOCN_NBR
+                )              pa14
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR) = pa14.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID) = pa14.SKU_ID)
+                full outer join     (select  pa11.SKU_ID  SKU_ID,
+                                pa11.LOCN_NBR  LOCN_NBR,
+                                max(pa11.SEARSDCENDINGINVENTORYUNITS)  WJXBFS1,
+                                max(pa11.SEARSCURRENTDCONORDERUNITS)  WJXBFS2
+                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pa11
+                                join        (select  pc11.SKU_ID  SKU_ID,
+                                                pc11.LOCN_NBR  LOCN_NBR,
+                                                max(pc11.WK_NBR)  WJXBFS1
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pc11
+                                where   pc11.GODWFLAG1_1 = 1
+                                group by              pc11.SKU_ID,
+                                                pc11.LOCN_NBR
+                                )              pa12
+                                  on         (pa11.LOCN_NBR = pa12.LOCN_NBR and
+                                pa11.SKU_ID = pa12.SKU_ID and
+                                pa11.WK_NBR = pa12.WJXBFS1)
+                where   pa11.GODWFLAG1_1 = 1
+                group by              pa11.SKU_ID,
+                                pa11.LOCN_NBR
+                )              pa15
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR) = pa15.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID) = pa15.SKU_ID)
+                full outer join     (select  pa11.SKU_ID  SKU_ID,
+                                pa11.LOCN_NBR  LOCN_NBR,
+                                max(pa11.SEARSDCENDINGINVENTORYUNITSLY)  WJXBFS1
+                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pa11
+                                join        (select  pc11.SKU_ID  SKU_ID,
+                                                pc11.LOCN_NBR  LOCN_NBR,
+                                                max(pc11.WK_NBR)  WJXBFS1
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pc11
+                                where   pc11.GODWFLAG11_1 = 1
+                                group by              pc11.SKU_ID,
+                                                pc11.LOCN_NBR
+                                )              pa12
+                                  on         (pa11.LOCN_NBR = pa12.LOCN_NBR and
+                                pa11.SKU_ID = pa12.SKU_ID and
+                                pa11.WK_NBR = pa12.WJXBFS1)
+                where   pa11.GODWFLAG11_1 = 1
+                group by              pa11.SKU_ID,
+                                pa11.LOCN_NBR
+                )              pa16
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR) = pa16.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID) = pa16.SKU_ID)
+                full outer join     (select  a11.SKU_ID  SKU_ID,
+                                a11.LOCN_NBR  LOCN_NBR,
+                                count(distinct a11.LOCN_NBR)  SEARSCOUNTOFSTORESWITHINVENTOR
+                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                join        (select  pa11.LOCN_NBR  LOCN_NBR,
+                                                pa11.SKU_ID  SKU_ID
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pa11
+                                                join        (select  pc11.SKU_ID  SKU_ID,
+                                                pc11.LOCN_NBR  LOCN_NBR,
+                                                max(pc11.WK_NBR)  WJXBFS1
+                                from      (select  a11.WK_NBR  WK_NBR,
+                                                a11.SKU_ID  SKU_ID,
+                                                a11.LOCN_NBR  LOCN_NBR,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITS,
+                                                sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('Y') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTDCONORDERUNITS,
+                                                max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG1_1,
+                                                sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSDCENDINGINVENTORYUNITSLY,
+                                                max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAG11_1
+                                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                                                  on         (a11.WK_NBR = a12.WK_NBR)
+                                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a13
+                                                  on         (a11.SKU_ID = a13.SKU_ID)
+                                where   (a13.LN_ID in (7757, 4061)
+                                and a12.CUST_TIME_ID in (2)
+                                and (a11.TYLY_DESC in ('TY')
+                                or a11.TYLY_DESC in ('LY')))
+                                group by              a11.WK_NBR,
+                                                a11.SKU_ID,
+                                                a11.LOCN_NBR
+                                )              pc11
+                                where   pc11.GODWFLAG1_1 = 1
+                                group by              pc11.SKU_ID,
+                                                pc11.LOCN_NBR
+                                )              pa12
+                                                  on         (pa11.LOCN_NBR = pa12.LOCN_NBR and
+                                                pa11.SKU_ID = pa12.SKU_ID and
+                                                pa11.WK_NBR = pa12.WJXBFS1)
+                                where   pa11.GODWFLAG1_1 = 1
+                                group by              pa11.LOCN_NBR,
+                                                pa11.SKU_ID
+                                having   max(pa11.SEARSSTOREENDINGINVENTORYUNITS) > 0.0
+                                )              pa12
+                                  on         (a11.LOCN_NBR = pa12.LOCN_NBR and
+                                a11.SKU_ID = pa12.SKU_ID)
+                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a13
+                                  on         (a11.WK_NBR = a13.WK_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                  on         (a11.SKU_ID = a14.SKU_ID)
+                where   (a14.LN_ID in (7757, 4061)
+                and a13.CUST_TIME_ID in (2)
+                and a11.TYLY_DESC in ('TY'))
+                group by              a11.SKU_ID,
+                                a11.LOCN_NBR
+                )              pa17
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR) = pa17.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID) = pa17.SKU_ID)
+                full outer join     (select  a11.SKU_ID  SKU_ID,
+                                a11.LOCN_NBR  LOCN_NBR,
+                                sum(a11.RCP_UN_QT)  SEARSTOTALDCRECEIPTSUNITS
+                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_DLY_OPR_RCP          a11
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_DAYS a12
+                                  on         (a11.DAY_NBR = a12.DAY_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a13
+                                  on         (a12.WK_NBR = a13.WK_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                                  on         (a11.SKU_ID = a14.SKU_ID)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                                  on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                where   (a14.LN_ID in (7757, 4061)
+                and a13.CUST_TIME_ID in (2)
+                and a15.STR_FMT in ('DST'))
+                group by              a11.SKU_ID,
+                                a11.LOCN_NBR
+                )              pa18
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR) = pa18.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID) = pa18.SKU_ID)
+                full outer join     (select  a11.SKU_ID  SKU_ID,
+                                a11.LOCN_NBR  LOCN_NBR,
+                                sum(a11.RCP_UN_QT)  SEARSTOTALSTORERECEIPTSUNITS
+                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_DLY_OPR_RCP          a11
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_DAYS a12
+                                  on         (a11.DAY_NBR = a12.DAY_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a13
+                                  on         (a12.WK_NBR = a13.WK_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a14
+                                  on         (a11.LOCN_NBR = a14.LOCN_NBR)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a15
+                                  on         (a11.SKU_ID = a15.SKU_ID)
+                                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a16
+                                  on         (a11.LOCN_NBR = a16.LOCN_NBR)
+                where   (a15.LN_ID in (7757, 4061)
+                and a13.CUST_TIME_ID in (2)
+                and (a14.GOB_IND in ('N                             ')
+                or a16.STR_OPER_CD in ('1'))
+                and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
+                and a16.STR_FMT not in ('DST'))
+                group by              a11.SKU_ID,
+                                a11.LOCN_NBR
+                )              pa19
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR) = pa19.LOCN_NBR and
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID) = pa19.SKU_ID)
+                join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a110
+                  on         (coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID) = a110.SKU_ID)
+                left outer join    (select  a11.PRD_IRL_NBR  PRD_IRL_NBR,
+                                avg((Case when a11.LN_ID in (7757, 4061) then a11.NATL_CST_PRC else NULL end))  SEARSLISTCOST,
+                                avg(a11.NATL_SLL_PRC)  SEARSLISTSELLPRICE
+                from      ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT         a11
+                group by              a11.PRD_IRL_NBR
+                )              pa111
+                  on         (a110.PRD_IRL_NBR = pa111.PRD_IRL_NBR)
+                join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a113
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR) = a113.LOCN_NBR)
+                join        (select b.KSN_ID, c.SKU_ID, max(d.RPT_ID) RPT_ID, max((d.RPT_ID) (format ' 999999999999999') )  RPT_DESC, d.RPT_GRP_DESC, d.RPT_ID_SEQ_NBR
+from ALEX_ARP_VIEWS_PRD.REF_SHC_KSN_TO_SRS_SKU a
+full outer join ALEX_ARP_VIEWS_PRD.LU_SHC_KSN b
+on (a.KSN_ID = b.KSN_ID)
+join ALEX_ARP_VIEWS_PRD.LU_SHC_VENDOR_PACK d
+on (a.KSN_ID = d.KSN_ID)
+full outer join ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU c
+on (a.SKU_ID = c.SKU_ID)
+group by 1,2,5,6)              a114
+                  on         (coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID) = a114.SKU_ID)
+                join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a115
+                  on         (coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR) = a115.LOCN_NBR)
+                join        ALEX_ARP_VIEWS_PRD.LU_SHC_KSN    a116
+                  on         (a114.KSN_ID = a116.KSN_ID)
+where   (a110.LN_ID in (7757, 4061)
+and (a113.GOB_IND in ('N                             ')
+or a115.STR_OPER_CD in ('1')))
+group by              a110.DIV_NBR,
+                a110.LN_ID,
+                a110.SBL_ID,
+                a110.CLS_ID,
+                a110.PRD_IRL_NBR,
+                a114.KSN_ID,
+                coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID),
+                coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR),
+                a115.LOCN_ST_CD
+ 
+[Analytical engine calculation steps:
+                1.  Calculate metric: <Sears OTD> in the dataset
+                2.  Calculate metric: <Sears OTD LY> in the dataset
+                3.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the dataset
+                4.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the dataset
+                5.  Calculate metric: <Sears Selling Margin $> in the dataset
+                6.  Calculate metric: <Sears Selling Margin $ LY> in the dataset
+                7.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the dataset
+                8.  Calculate metric: <Sears Selling Margin %> in the dataset
+                9.  Calculate metric: <Sears Selling Margin % LY> in the dataset
+                10.  Calculate metric: <Sears (+/-) Sell through> in the dataset
+                11.  Calculate metric: <Sears (+/-) Sell through LY> in the dataset
+                12.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the dataset
+                13.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the dataset
+                14.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the dataset
+                15.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the dataset
+                16.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the dataset
+                17.  Calculate metric: <Sears OTD> in the view
+                18.  Calculate metric: <Sears OTD LY> in the view
+                19.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the view
+                20.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the view
+                21.  Calculate metric: <Sears Selling Margin $> in the view
+                22.  Calculate metric: <Sears Selling Margin $ LY> in the view
+                23.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the view
+                24.  Calculate metric: <Sears Selling Margin %> in the view
+                25.  Calculate metric: <Sears Selling Margin % LY> in the view
+                26.  Calculate metric: <Sears (+/-) Sell through> in the view
+                27.  Calculate metric: <Sears (+/-) Sell through LY> in the view
+                28.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the view
+                29.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the view
+                30.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the view
+                31.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the view
+                32.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the view
+                33.  Perform cross-tabbing
+]
