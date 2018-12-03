@@ -1,3 +1,54 @@
+Alex tables:
+ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY
+ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY 
+ALEX_ARP_VIEWS_PRD.FACT_SRS_DLY_OPR_RCP
+ALEX_ARP_VIEWS_PRD.REF_SHC_KSN_TO_SRS_SKU
+LOCN_NBR
+ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIM
+ALEX_ARP_VIEWS_PRD.LU_SHC_DAYS 
+ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN 
+ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU
+ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION
+ALEX_ARP_VIEWS_PRD.LU_SHC_KSN
+ALEX_ARP_VIEWS_PRD.LU_SHC_VENDOR_PACK
+ALEX_ARP_VIEWS_PRD.LU_SHC_KSN 
+
+[Analytical engine calculation steps:
+                1.  Calculate metric: <Sears OTD> in the dataset
+                2.  Calculate metric: <Sears OTD LY> in the dataset
+                3.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the dataset
+                4.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the dataset
+                5.  Calculate metric: <Sears Selling Margin $> in the dataset
+                6.  Calculate metric: <Sears Selling Margin $ LY> in the dataset
+                7.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the dataset
+                8.  Calculate metric: <Sears Selling Margin %> in the dataset
+                9.  Calculate metric: <Sears Selling Margin % LY> in the dataset
+                10.  Calculate metric: <Sears (+/-) Sell through> in the dataset
+                11.  Calculate metric: <Sears (+/-) Sell through LY> in the dataset
+                12.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the dataset
+                13.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the dataset
+                14.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the dataset
+                15.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the dataset
+                16.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the dataset
+                17.  Calculate metric: <Sears OTD> in the view
+                18.  Calculate metric: <Sears OTD LY> in the view
+                19.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the view
+                20.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the view
+                21.  Calculate metric: <Sears Selling Margin $> in the view
+                22.  Calculate metric: <Sears Selling Margin $ LY> in the view
+                23.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the view
+                24.  Calculate metric: <Sears Selling Margin %> in the view
+                25.  Calculate metric: <Sears Selling Margin % LY> in the view
+                26.  Calculate metric: <Sears (+/-) Sell through> in the view
+                27.  Calculate metric: <Sears (+/-) Sell through LY> in the view
+                28.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the view
+                29.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the view
+                30.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the view
+                31.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the view
+                32.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the view
+                33.  Perform cross-tabbing
+]
+
 SET QUERY_BAND= 'APP=MSTR;Project=ALEX3.0-Teradata;Report=SEARS LAST WEEK UNIFORMS;' FOR SESSION;
  
 select    a110.DIV_NBR  DIV_NBR,
@@ -505,39 +556,4 @@ group by              a110.DIV_NBR,
                 coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID),
                 coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR),
                 a115.LOCN_ST_CD
- 
-[Analytical engine calculation steps:
-                1.  Calculate metric: <Sears OTD> in the dataset
-                2.  Calculate metric: <Sears OTD LY> in the dataset
-                3.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the dataset
-                4.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the dataset
-                5.  Calculate metric: <Sears Selling Margin $> in the dataset
-                6.  Calculate metric: <Sears Selling Margin $ LY> in the dataset
-                7.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the dataset
-                8.  Calculate metric: <Sears Selling Margin %> in the dataset
-                9.  Calculate metric: <Sears Selling Margin % LY> in the dataset
-                10.  Calculate metric: <Sears (+/-) Sell through> in the dataset
-                11.  Calculate metric: <Sears (+/-) Sell through LY> in the dataset
-                12.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the dataset
-                13.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the dataset
-                14.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the dataset
-                15.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the dataset
-                16.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the dataset
-                17.  Calculate metric: <Sears OTD> in the view
-                18.  Calculate metric: <Sears OTD LY> in the view
-                19.  Calculate metric: <Sears Total Sales $ TY-LY % Change> in the view
-                20.  Calculate metric: <Sears Total Sales Units TY-LY % Change> in the view
-                21.  Calculate metric: <Sears Selling Margin $> in the view
-                22.  Calculate metric: <Sears Selling Margin $ LY> in the view
-                23.  Calculate metric: <Sears Selling Margin $ TY-LY % Change> in the view
-                24.  Calculate metric: <Sears Selling Margin %> in the view
-                25.  Calculate metric: <Sears Selling Margin % LY> in the view
-                26.  Calculate metric: <Sears (+/-) Sell through> in the view
-                27.  Calculate metric: <Sears (+/-) Sell through LY> in the view
-                28.  Calculate metric: <Sears (+/-) Store Ending Inventory Units TY-LY % Change> in the view
-                29.  Calculate metric: <Sears (+/-) DC Ending Inventory Units TY-LY % Change> in the view
-                30.  Calculate metric: <Sears (+/-) Total Ending Inventory Units> in the view
-                31.  Calculate metric: <Sears (+/-) Total Ending Inventory Units LY> in the view
-                32.  Calculate metric: <Sears (+/-) Total Ending Inventory Units TY-LY % Change> in the view
-                33.  Perform cross-tabbing
-]
+
