@@ -1,4 +1,5 @@
 SELECT * FROM `syw-analytics-repo-prod.alex_arp_views_prd.fact_shc_wkly_opr_ins_tyly` LIMIT 1000
+SELECT * FROM `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_sls_tyly` LIMIT 1000
 Alex tables:
 ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY
 ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY 
