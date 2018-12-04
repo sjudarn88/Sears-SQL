@@ -35,14 +35,14 @@ select  pc11.SKU_ID  SKU_ID,
                         max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
                         sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
                         max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
-                  from    ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
-                       join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                  from    `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_ins_tyly`     a11
+                       join       `syw-analytics-repo-prod.alex_arp_views_prd.ref_custom_time`        a12
                          on         (a11.WK_NBR = a12.WK_NBR)
-                       join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                       join       `syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`    a13
                          on         (a11.LOCN_NBR = a13.LOCN_NBR)
-                       join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                       join       `syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`     a14
                          on         (a11.SKU_ID = a14.SKU_ID)
-                       join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                       join        `syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`       a15
                          on         (a11.LOCN_NBR = a15.LOCN_NBR)
                   where   (a14.LN_ID in (7757, 4061)
                            and a12.CUST_TIME_ID in (2)
