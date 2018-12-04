@@ -81,6 +81,8 @@ period_receipts as (
 select  b11.MTH_NBR  MTH_NBR,
     	b11.LOCN_NBR  LOCN_NBR,
     	max(b11.LOCN_NM)  LOCN_NM,
+	b14.VBS_NBR,
+	max(b14.VBS_DESC) VBS_DESC,
 	b14.DIV_NBR,
 	max(b14.DIV_DESC) DIC_DESC,
 	b14.LN_NBR,
@@ -113,6 +115,7 @@ select  b11.MTH_NBR  MTH_NBR,
     	on b11.SKU_ID = b14.SKU_ID
      group by b11.MTH_NBR
      	      ,b11.LOCN_NBR
+	      ,b14.VBS_NBR
 	      ,b14.DIV_NBR
 	      ,b14.LN_NBR
 	      ,b14.SBL_NBR
