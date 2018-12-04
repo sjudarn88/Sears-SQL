@@ -54,4 +54,293 @@ select  pc11.SKU_ID  SKU_ID,
                   )            pc11
     where   pc11.GODWFLAG8_1 = 1
     group by      1,2
+    
+    
+select	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR)  MTH_NBR,
+	max(a18.MOY||' '|| a18.MTH_END_DT)  CustCol,
+	max(a18.MTH_END_DT)  MTH_END_DT,
+	max(a18.MOY)  MOY,
+	max(SUBSTR(a18.MTH_DESC, 1, 3))  CustCol_84,
+	a16.GRO_NBR  GRO_NBR,
+	max(a16.GRO_DESC)  GRO_DESC,
+	a16.VBS_NBR  VBS_NBR,
+	max(a16.VBS_DESC)  VBS_DESC,
+	a16.DIV_NBR  DIV_NBR,
+	max(a16.DIV_DESC)  DIV_DESC,
+	a16.LN_ID  LN_ID,
+	max(a16.DIV_NBR)  DIV_NBR0,
+	max(a16.LN_NBR)  LN_NBR,
+	max(a16.LN_DESC)  LN_DESC,
+	a16.SBL_ID  SBL_ID,
+	max(a16.SBL_DESC)  SBL_DESC0,
+	max(a16.SBL_NBR)  SBL_NBR,
+	a16.CLS_ID  CLS_ID,
+	max(a16.CLS_DESC)  CLS_DESC,
+	max(a16.CLS_NBR)  CLS_NBR,
+	a16.PRD_IRL_NBR  PRD_IRL_NBR,
+	max(a16.PRD_DESC)  PRD_DESC,
+	max(a16.DIV_NBR)  DIV_NBR1,
+	max(a16.ITM_NBR)  ITM_NBR0,
+	coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID)  SKU_ID,
+	max(coalesce(pa11.SKU_DESC, pa12.SKU_DESC, pa13.SKU_DESC, pa14.SKU_DESC))  SKU_DESC,
+	max(coalesce(pa11.DIV_NBR, pa12.DIV_NBR, pa13.DIV_NBR, pa14.DIV_NBR))  DIV_NBR2,
+	max(coalesce(pa11.ITM_NBR, pa12.ITM_NBR, pa13.ITM_NBR, pa14.ITM_NBR))  ITM_NBR1,
+	max(coalesce(pa11.SKU_NBR, pa12.SKU_NBR, pa13.SKU_NBR, pa14.SKU_NBR))  SKU_NBR,
+	coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR)  LOCN_NBR,
+	max(coalesce(pa11.LOCN_NM, pa12.LOCN_NM, pa14.LOCN_NM))  LOCN_NM,
+	max(pa11.SEARSTOTALSALES)  SEARSTOTALSALES,
+	max(pa11.SEARSTOTALSALESUNITS)  SEARSTOTALSALESUNITS,
+	max(pa12.WJXBFS1)  SEARSSTOREENDINGINVENTORYUNITS,
+	max(pa13.WJXBFS1)  SEARSDCENDINGINVENTORYUNITS,
+	max(pa14.SEARSTOTALSTORERECEIPTSRETAIL)  SEARSTOTALSTORERECEIPTSRETAIL,
+	max(pa11.SEARSCOSTOFMDSESOLD)  SEARSCOSTOFMDSESOLD,
+	max(pa12.WJXBFS2)  SEARSSTOREENDINGINVENTORYRETAI,
+	max(pa12.WJXBFS3)  SEARSSTOREENDINGINVENTORYUNIT1
+from	(select	a11.SKU_ID  SKU_ID,
+		max(a14.SKU_DESC)  SKU_DESC,
+		max(a14.DIV_NBR)  DIV_NBR,
+		max(a14.ITM_NBR)  ITM_NBR,
+		max(a14.SKU_NBR)  SKU_NBR,
+		a12.MTH_NBR  MTH_NBR,
+		a11.LOCN_NBR  LOCN_NBR,
+		max(a15.LOCN_NM)  LOCN_NM,
+		sum( CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.TY_CTR  end)  SEARSTOTALSALES,
+		sum( CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.TY_CTR  end)  SEARSTOTALSALESUNITS,
+		sum( CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.TY_CTR  end)  SEARSCOSTOFMDSESOLD
+	from	ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY	a11
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_WEEKS	a12
+		  on 	(a11.WK_NBR = a12.WK_NBR)
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a13
+		  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+		join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a14
+		  on 	(a11.SKU_ID = a14.SKU_ID)
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a15
+		  on 	(a11.LOCN_NBR = a15.LOCN_NBR)
+	where	(a15.STR_OPER_CD in ('1')
+	 and a13.GOB_IND in ('N                             ')
+	 and a14.GRO_NBR in (803)
+	 and a12.MTH_NBR in (201809, 201810)
+	 and a11.TRS_TYP_CD in ('A', 'R', 'S')
+	 and a11.TYLY_DESC in ('TY'))
+	group by	a11.SKU_ID,
+		a12.MTH_NBR,
+		a11.LOCN_NBR
+	)	pa11
+	full outer join	(select	pa11.SKU_ID  SKU_ID,
+		max(pa11.SKU_DESC)  SKU_DESC,
+		max(pa11.DIV_NBR)  DIV_NBR,
+		max(pa11.ITM_NBR)  ITM_NBR,
+		max(pa11.SKU_NBR)  SKU_NBR,
+		pa11.MTH_NBR  MTH_NBR,
+		pa11.LOCN_NBR  LOCN_NBR,
+		max(pa11.LOCN_NM)  LOCN_NM,
+		max(pa11.SEARSSTOREENDINGINVENTORYUNITS)  WJXBFS1,
+		max(pa11.SEARSSTOREENDINGINVENTORYRETAI)  WJXBFS2,
+		max(pa11.SEARSSTOREENDINGINVENTORYUNIT1)  WJXBFS3
+	from	(select	a11.WK_NBR  WK_NBR,
+			a11.SKU_ID  SKU_ID,
+			max(a14.SKU_DESC)  SKU_DESC,
+			max(a14.DIV_NBR)  DIV_NBR,
+			max(a14.ITM_NBR)  ITM_NBR,
+			max(a14.SKU_NBR)  SKU_NBR,
+			a12.MTH_NBR  MTH_NBR,
+			a11.LOCN_NBR  LOCN_NBR,
+			max(a15.LOCN_NM)  LOCN_NM,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end)  SEARSSTOREENDINGINVENTORYUNITS,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_SLL_DLR*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYRETAI,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYUNIT1
+		from	ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY	a11
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_WEEKS	a12
+			  on 	(a11.WK_NBR = a12.WK_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a13
+			  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a14
+			  on 	(a11.SKU_ID = a14.SKU_ID)
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a15
+			  on 	(a11.LOCN_NBR = a15.LOCN_NBR)
+		where	(a15.STR_OPER_CD in ('1')
+		 and a13.GOB_IND in ('N                             ')
+		 and a14.GRO_NBR in (803)
+		 and a12.MTH_NBR in (201809, 201810)
+		 and a11.TYLY_DESC in ('TY'))
+		group by	a11.WK_NBR,
+			a11.SKU_ID,
+			a12.MTH_NBR,
+			a11.LOCN_NBR
+		)	pa11
+		join	(select	pc11.SKU_ID  SKU_ID,
+			pc11.MTH_NBR  MTH_NBR,
+			pc11.LOCN_NBR  LOCN_NBR,
+			max(pc11.WK_NBR)  WJXBFS1
+		from	(select	a11.WK_NBR  WK_NBR,
+			a11.SKU_ID  SKU_ID,
+			max(a14.SKU_DESC)  SKU_DESC,
+			max(a14.DIV_NBR)  DIV_NBR,
+			max(a14.ITM_NBR)  ITM_NBR,
+			max(a14.SKU_NBR)  SKU_NBR,
+			a12.MTH_NBR  MTH_NBR,
+			a11.LOCN_NBR  LOCN_NBR,
+			max(a15.LOCN_NM)  LOCN_NM,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end)  SEARSSTOREENDINGINVENTORYUNITS,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_SLL_DLR*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYRETAI,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYUNIT1
+		from	ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY	a11
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_WEEKS	a12
+			  on 	(a11.WK_NBR = a12.WK_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a13
+			  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a14
+			  on 	(a11.SKU_ID = a14.SKU_ID)
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a15
+			  on 	(a11.LOCN_NBR = a15.LOCN_NBR)
+		where	(a15.STR_OPER_CD in ('1')
+		 and a13.GOB_IND in ('N                             ')
+		 and a14.GRO_NBR in (803)
+		 and a12.MTH_NBR in (201809, 201810)
+		 and a11.TYLY_DESC in ('TY'))
+		group by	a11.WK_NBR,
+			a11.SKU_ID,
+			a12.MTH_NBR,
+			a11.LOCN_NBR
+		)	pc11
+		group by	pc11.SKU_ID,
+			pc11.MTH_NBR,
+			pc11.LOCN_NBR
+		)	pa12
+		  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
+		pa11.MTH_NBR = pa12.MTH_NBR and 
+		pa11.SKU_ID = pa12.SKU_ID and 
+		pa11.WK_NBR = pa12.WJXBFS1)
+	group by	pa11.SKU_ID,
+		pa11.MTH_NBR,
+		pa11.LOCN_NBR
+	)	pa12
+	  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
+	pa11.MTH_NBR = pa12.MTH_NBR and 
+	pa11.SKU_ID = pa12.SKU_ID)
+	full outer join	(select	pa11.SKU_ID  SKU_ID,
+		max(pa11.SKU_DESC)  SKU_DESC,
+		max(pa11.DIV_NBR)  DIV_NBR,
+		max(pa11.ITM_NBR)  ITM_NBR,
+		max(pa11.SKU_NBR)  SKU_NBR,
+		pa11.MTH_NBR  MTH_NBR,
+		pa11.LOCN_NBR  LOCN_NBR,
+		max(pa11.SEARSDCENDINGINVENTORYUNITS)  WJXBFS1
+	from	(select	a11.WK_NBR  WK_NBR,
+			a11.SKU_ID  SKU_ID,
+			max(a13.SKU_DESC)  SKU_DESC,
+			max(a13.DIV_NBR)  DIV_NBR,
+			max(a13.ITM_NBR)  ITM_NBR,
+			max(a13.SKU_NBR)  SKU_NBR,
+			a12.MTH_NBR  MTH_NBR,
+			a11.LOCN_NBR  LOCN_NBR,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSDCENDINGINVENTORYUNITS
+		from	ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY	a11
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_WEEKS	a12
+			  on 	(a11.WK_NBR = a12.WK_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a13
+			  on 	(a11.SKU_ID = a13.SKU_ID)
+		where	(a13.GRO_NBR in (803)
+		 and a12.MTH_NBR in (201809, 201810)
+		 and a11.TYLY_DESC in ('TY'))
+		group by	a11.WK_NBR,
+			a11.SKU_ID,
+			a12.MTH_NBR,
+			a11.LOCN_NBR
+		)	pa11
+		join	(select	pc11.SKU_ID  SKU_ID,
+			pc11.MTH_NBR  MTH_NBR,
+			pc11.LOCN_NBR  LOCN_NBR,
+			max(pc11.WK_NBR)  WJXBFS1
+		from	(select	a11.WK_NBR  WK_NBR,
+			a11.SKU_ID  SKU_ID,
+			max(a13.SKU_DESC)  SKU_DESC,
+			max(a13.DIV_NBR)  DIV_NBR,
+			max(a13.ITM_NBR)  ITM_NBR,
+			max(a13.SKU_NBR)  SKU_NBR,
+			a12.MTH_NBR  MTH_NBR,
+			a11.LOCN_NBR  LOCN_NBR,
+			sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSDCENDINGINVENTORYUNITS
+		from	ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY	a11
+			join	ALEX_ARP_VIEWS_PRD.LU_SHC_WEEKS	a12
+			  on 	(a11.WK_NBR = a12.WK_NBR)
+			join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a13
+			  on 	(a11.SKU_ID = a13.SKU_ID)
+		where	(a13.GRO_NBR in (803)
+		 and a12.MTH_NBR in (201809, 201810)
+		 and a11.TYLY_DESC in ('TY'))
+		group by	a11.WK_NBR,
+			a11.SKU_ID,
+			a12.MTH_NBR,
+			a11.LOCN_NBR
+		)	pc11
+		group by	pc11.SKU_ID,
+			pc11.MTH_NBR,
+			pc11.LOCN_NBR
+		)	pa12
+		  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
+		pa11.MTH_NBR = pa12.MTH_NBR and 
+		pa11.SKU_ID = pa12.SKU_ID and 
+		pa11.WK_NBR = pa12.WJXBFS1)
+	group by	pa11.SKU_ID,
+		pa11.MTH_NBR,
+		pa11.LOCN_NBR
+	)	pa13
+	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR) = pa13.LOCN_NBR and 
+	coalesce(pa11.MTH_NBR, pa12.MTH_NBR) = pa13.MTH_NBR and 
+	coalesce(pa11.SKU_ID, pa12.SKU_ID) = pa13.SKU_ID)
+	full outer join	(select	a11.SKU_ID  SKU_ID,
+		max(a14.SKU_DESC)  SKU_DESC,
+		max(a14.DIV_NBR)  DIV_NBR,
+		max(a14.ITM_NBR)  ITM_NBR,
+		max(a14.SKU_NBR)  SKU_NBR,
+		a12.MTH_NBR  MTH_NBR,
+		a11.LOCN_NBR  LOCN_NBR,
+		max(a15.LOCN_NM)  LOCN_NM,
+		sum(a11.RCP_SLL_DLR)  SEARSTOTALSTORERECEIPTSRETAIL
+	from	ALEX_ARP_VIEWS_PRD.FACT_SRS_DLY_OPR_RCP	a11
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_DAYS	a12
+		  on 	(a11.DAY_NBR = a12.DAY_NBR)
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a13
+		  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+		join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a14
+		  on 	(a11.SKU_ID = a14.SKU_ID)
+		join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a15
+		  on 	(a11.LOCN_NBR = a15.LOCN_NBR)
+	where	(a15.STR_OPER_CD in ('1')
+	 and a13.GOB_IND in ('N                             ')
+	 and a14.GRO_NBR in (803)
+	 and a12.MTH_NBR in (201809, 201810)
+	 and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
+	 and a15.STR_FMT not in ('DST'))
+	group by	a11.SKU_ID,
+		a12.MTH_NBR,
+		a11.LOCN_NBR
+	)	pa14
+	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR) = pa14.LOCN_NBR and 
+	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR) = pa14.MTH_NBR and 
+	coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID) = pa14.SKU_ID)
+	join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a15
+	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR) = a15.LOCN_NBR)
+	join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a16
+	  on 	(coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID) = a16.SKU_ID)
+	join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a17
+	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR) = a17.LOCN_NBR)
+	join	ALEX_ARP_VIEWS_PRD.LU_SHC_MONTHS	a18
+	  on 	(coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) = a18.MTH_NBR)
+where	(a17.STR_OPER_CD in ('1')
+ and a15.GOB_IND in ('N                             ')
+ and a16.GRO_NBR in (803)
+ and coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) in (201809, 201810))
+group by	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR),
+	a16.GRO_NBR,
+	a16.VBS_NBR,
+	a16.DIV_NBR,
+	a16.LN_ID,
+	a16.SBL_ID,
+	a16.CLS_ID,
+	a16.PRD_IRL_NBR,
+	coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID),
+	coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR)
+    
 
