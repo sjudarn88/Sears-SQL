@@ -22,4 +22,36 @@ select  a11.SKU_ID  SKU_ID,
         and   a11.TRS_TYP_CD in ('A', 'R', 'S')
         and   (a11.TYLY_DESC in ('TY') or a11.TYLY_DESC in ('LY'))
     group by     1,2
+    
+#####calculating inventory  
+select  pc11.SKU_ID  SKU_ID,
+        pc11.LOCN_NBR  LOCN_NBR,
+        max(pc11.WK_NBR)  WJXBFS1
+    from    (select     a11.WK_NBR  WK_NBR,
+                        a11.SKU_ID  SKU_ID,
+                        a11.LOCN_NBR  LOCN_NBR,
+                        sum((Case when a11.TYLY_DESC in ('TY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNITS,
+                        sum((Case when a11.TYLY_DESC in ('TY') then CASE WHEN a11.INS_TYP_CD = 'O' AND a11.DST_CD in ('N') THEN a11.TTL_UN_QT*a11.TY_CTR  ELSE 0 end else NULL end))  SEARSCURRENTSTOREONORDERUNITS,
+                        max((Case when a11.TYLY_DESC in ('TY') then 1 else 0 end))  GODWFLAG8_1,
+                        sum((Case when a11.TYLY_DESC in ('LY') then case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.LY_CTR ELSE 0 end else NULL end))  SEARSSTOREENDINGINVENTORYUNIT1,
+                        max((Case when a11.TYLY_DESC in ('LY') then 1 else 0 end))  GODWFLAGb_1
+                  from    ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_INS_TYLY            a11
+                       join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
+                         on         (a11.WK_NBR = a12.WK_NBR)
+                       join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
+                         on         (a11.LOCN_NBR = a13.LOCN_NBR)
+                       join        ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU              a14
+                         on         (a11.SKU_ID = a14.SKU_ID)
+                       join        ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION       a15
+                         on         (a11.LOCN_NBR = a15.LOCN_NBR)
+                  where   (a14.LN_ID in (7757, 4061)
+                           and a12.CUST_TIME_ID in (2)
+                           and (a13.GOB_IND in ('N') or a15.STR_OPER_CD in ('1'))
+                           and (a11.TYLY_DESC in ('TY') or a11.TYLY_DESC in ('LY')))
+                  group by     a11.WK_NBR,
+                               a11.SKU_ID,
+                               a11.LOCN_NBR
+                  )            pc11
+    where   pc11.GODWFLAG8_1 = 1
+    group by      1,2
 
