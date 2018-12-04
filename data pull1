@@ -54,8 +54,10 @@ select  pc11.SKU_ID  SKU_ID,
                   )            pc11
     where   pc11.GODWFLAG8_1 = 1
     group by      1,2
-    
-    
+ 
+ 
+ 
+##################################################################################    
 select	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR)  MTH_NBR,
 	max(a18.MOY||' '|| a18.MTH_END_DT)  CustCol,
 	max(a18.MTH_END_DT)  MTH_END_DT,
@@ -90,13 +92,18 @@ select	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR)  MTH_NBR
 	max(coalesce(pa11.LOCN_NM, pa12.LOCN_NM, pa14.LOCN_NM))  LOCN_NM,
 	max(pa11.SEARSTOTALSALES)  SEARSTOTALSALES,
 	max(pa11.SEARSTOTALSALESUNITS)  SEARSTOTALSALESUNITS,
+	
+	
 	max(pa12.WJXBFS1)  SEARSSTOREENDINGINVENTORYUNITS,
 	max(pa13.WJXBFS1)  SEARSDCENDINGINVENTORYUNITS,
 	max(pa14.SEARSTOTALSTORERECEIPTSRETAIL)  SEARSTOTALSTORERECEIPTSRETAIL,
 	max(pa11.SEARSCOSTOFMDSESOLD)  SEARSCOSTOFMDSESOLD,
 	max(pa12.WJXBFS2)  SEARSSTOREENDINGINVENTORYRETAI,
 	max(pa12.WJXBFS3)  SEARSSTOREENDINGINVENTORYUNIT1
-from	(select	a11.SKU_ID  SKU_ID,
+from	
+	
+	
+	(select	a11.SKU_ID  SKU_ID,
 		max(a14.SKU_DESC)  SKU_DESC,
 		max(a14.DIV_NBR)  DIV_NBR,
 		max(a14.ITM_NBR)  ITM_NBR,
@@ -126,6 +133,9 @@ from	(select	a11.SKU_ID  SKU_ID,
 		a12.MTH_NBR,
 		a11.LOCN_NBR
 	)	pa11
+	
+	
+	
 	full outer join	(select	pa11.SKU_ID  SKU_ID,
 		max(pa11.SKU_DESC)  SKU_DESC,
 		max(pa11.DIV_NBR)  DIV_NBR,
@@ -168,7 +178,8 @@ from	(select	a11.SKU_ID  SKU_ID,
 			a12.MTH_NBR,
 			a11.LOCN_NBR
 		)	pa11
-		join	(select	pc11.SKU_ID  SKU_ID,
+		join	
+		(select	pc11.SKU_ID  SKU_ID,
 			pc11.MTH_NBR  MTH_NBR,
 			pc11.LOCN_NBR  LOCN_NBR,
 			max(pc11.WK_NBR)  WJXBFS1
@@ -215,10 +226,15 @@ from	(select	a11.SKU_ID  SKU_ID,
 		pa11.MTH_NBR,
 		pa11.LOCN_NBR
 	)	pa12
+	
 	  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
 	pa11.MTH_NBR = pa12.MTH_NBR and 
 	pa11.SKU_ID = pa12.SKU_ID)
-	full outer join	(select	pa11.SKU_ID  SKU_ID,
+	
+	
+	
+	full outer join	
+	(select	pa11.SKU_ID  SKU_ID,
 		max(pa11.SKU_DESC)  SKU_DESC,
 		max(pa11.DIV_NBR)  DIV_NBR,
 		max(pa11.ITM_NBR)  ITM_NBR,
@@ -286,10 +302,15 @@ from	(select	a11.SKU_ID  SKU_ID,
 		pa11.MTH_NBR,
 		pa11.LOCN_NBR
 	)	pa13
+	
 	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR) = pa13.LOCN_NBR and 
 	coalesce(pa11.MTH_NBR, pa12.MTH_NBR) = pa13.MTH_NBR and 
 	coalesce(pa11.SKU_ID, pa12.SKU_ID) = pa13.SKU_ID)
-	full outer join	(select	a11.SKU_ID  SKU_ID,
+	
+	
+	
+	full outer join	
+	(select	a11.SKU_ID  SKU_ID,
 		max(a14.SKU_DESC)  SKU_DESC,
 		max(a14.DIV_NBR)  DIV_NBR,
 		max(a14.ITM_NBR)  ITM_NBR,
@@ -317,6 +338,9 @@ from	(select	a11.SKU_ID  SKU_ID,
 		a12.MTH_NBR,
 		a11.LOCN_NBR
 	)	pa14
+	
+	
+	
 	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR) = pa14.LOCN_NBR and 
 	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR) = pa14.MTH_NBR and 
 	coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID) = pa14.SKU_ID)
@@ -328,6 +352,9 @@ from	(select	a11.SKU_ID  SKU_ID,
 	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR) = a17.LOCN_NBR)
 	join	ALEX_ARP_VIEWS_PRD.LU_SHC_MONTHS	a18
 	  on 	(coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) = a18.MTH_NBR)
+	  
+	  
+	  
 where	(a17.STR_OPER_CD in ('1')
  and a15.GOB_IND in ('N                             ')
  and a16.GRO_NBR in (803)
@@ -342,5 +369,36 @@ group by	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR),
 	a16.PRD_IRL_NBR,
 	coalesce(pa11.SKU_ID, pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID),
 	coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR)
+	
+
+### calculating receipts
+period_receipts as (
+    select	a11.SKU_ID  SKU_ID,
+    		    max(a14.SKU_DESC)  SKU_DESC,
+    		    max(a14.DIV_NBR)  DIV_NBR,
+    		    max(a14.ITM_NBR)  ITM_NBR,
+    		    max(a14.SKU_NBR)  SKU_NBR,
+    		    a12.MTH_NBR  MTH_NBR,
+    		    a11.LOCN_NBR  LOCN_NBR,
+    		    max(a15.LOCN_NM)  LOCN_NM,
+    		    sum(a11.RCP_SLL_DLR)  SEARSTOTALSTORERECEIPTSRETAIL
+    	from	`syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_dly_opr_rcp`        a11
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_days`           a12
+    		      on 	(a11.DAY_NBR = a12.DAY_NBR)
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`	 a13
+    		      on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`	   a14
+    		      on 	(a11.SKU_ID = a14.SKU_ID)
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`	     a15
+    		      on 	(a11.LOCN_NBR = a15.LOCN_NBR)
+    	where	(a15.STR_OPER_CD in ('1')
+    	      and a13.GOB_IND in ('N')
+    	      and a14.GRO_NBR in (803)
+    	      and a12.MTH_NBR in (201809, 201810)
+    	      and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
+    	      and a15.STR_FMT not in ('DST'))
+    	group by	a11.SKU_ID,
+		            a12.MTH_NBR,
+		            a11.LOCN_NBR )
     
 
