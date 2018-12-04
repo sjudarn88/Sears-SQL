@@ -1,0 +1,25 @@
+
+select  a11.SKU_ID  SKU_ID,
+        a11.LOCN_NBR  LOCN_NBR,
+        sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.TY_CTR  end else NULL end))  SEARSTOTALSALES,
+        sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.TY_CTR  end else NULL end))  SEARSTOTALSALESUNITS,
+        sum((Case when a11.TYLY_DESC in ('TY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.TY_CTR  end else NULL end))  SEARSCOSTOFMDSESOLD,
+        sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESLY,
+        sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESUNITSLY,
+        sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.LY_CTR end else NULL end))  SEARSCOSTOFMDSESOLDLY
+    from    `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_sls_tyly`      a11
+        join        `syw-analytics-repo-prod.alex_arp_views_prd.ref_custom_time`         a12
+          on         (a11.WK_NBR = a12.WK_NBR)
+        join        `syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`     a13
+          on         (a11.LOCN_NBR = a13.LOCN_NBR)
+        join        `syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`      a14
+          on         (a11.SKU_ID = a14.SKU_ID)
+        join       `syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`          a15
+          on         (a11.LOCN_NBR = a15.LOCN_NBR)
+    where     a12.CUST_TIME_ID in (2)
+        and   a12.GRO_NBR in (803)
+        and   (a13.GOB_IND in ('N') or a15.STR_OPER_CD in ('1'))
+        and   a11.TRS_TYP_CD in ('A', 'R', 'S')
+        and   (a11.TYLY_DESC in ('TY') or a11.TYLY_DESC in ('LY'))
+    group by     1,2
+
