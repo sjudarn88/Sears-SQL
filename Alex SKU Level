@@ -104,7 +104,7 @@ from      (select  a11.SKU_ID  SKU_ID,
                                 sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESLY,
                                 sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.LY_CTR  end else NULL end))  SEARSTOTALSALESUNITSLY,
                                 sum((Case when a11.TYLY_DESC in ('LY') then  CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_CST_DLR*a11.LY_CTR end else NULL end))  SEARSCOSTOFMDSESOLDLY
-                from      ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY            a11
+                from      `syw-analytics-repo-prod.ALEX_ARP_VIEWS_PRD.FACT_SRS_WKLY_OPR_SLS_TYLY`          a11
                                 join        ALEX_ARP_VIEWS_PRD.REF_CUSTOM_TIME     a12
                                   on         (a11.WK_NBR = a12.WK_NBR)
                                 join        ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN          a13
@@ -558,4 +558,28 @@ group by              a110.DIV_NBR,
                 coalesce(pa12.SKU_ID, pa13.SKU_ID, pa14.SKU_ID, pa15.SKU_ID, pa16.SKU_ID, pa17.SKU_ID, pa18.SKU_ID, pa19.SKU_ID),
                 coalesce(pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR, pa15.LOCN_NBR, pa16.LOCN_NBR, pa17.LOCN_NBR, pa18.LOCN_NBR, pa19.LOCN_NBR),
                 a115.LOCN_ST_CD
+                
+                
+#####going forward stores
+select	a12.GRO_NBR  GRO_NBR,
+	max(a12.GRO_DESC)  GRO_DESC,
+	a11.LOCN_NBR  LOCN_NBR,
+	max(a14.LOCN_NM)  LOCN_NM,
+	sum( CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_UN_QT*a11.TY_CTR  end)  SEARSTOTALSALESUNITS,
+	sum( CASE WHEN a11.SLS_TYP_CD not in ('M') THEN a11.TRS_SLL_DLR*a11.TY_CTR  end)  SEARSTOTALSALES
+from	ALEX_ARP_VIEWS_PRD.FACT_SRS_DLY_OPR_SLS_TYLY	a11
+	join	ALEX_ARP_VIEWS_PRD.LU_SRS_PRODUCT_SKU	a12
+	  on 	(a11.SKU_ID = a12.SKU_ID)
+	join	ALEX_ARP_VIEWS_PRD.LU_SHC_CDS_GOB_LOCN	a13
+	  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
+	join	ALEX_ARP_VIEWS_PRD.LU_SHC_LOCATION	a14
+	  on 	(a11.LOCN_NBR = a14.LOCN_NBR)
+where	(a13.GOB_IND in ('N                             ')
+ and a14.STR_OPER_CD in ('1')
+ and a12.GRO_NBR in (803)
+ and a11.DAY_NBR in (DATE '2018-12-01')
+ and a11.TRS_TYP_CD in ('A', 'R', 'S')
+ and a11.TYLY_DESC in ('TY'))
+group by	a12.GRO_NBR,
+	a11.LOCN_NBR
 
