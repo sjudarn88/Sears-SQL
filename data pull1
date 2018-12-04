@@ -23,7 +23,7 @@ select  a11.SKU_ID  SKU_ID,
         and   (a11.TYLY_DESC in ('TY') or a11.TYLY_DESC in ('LY'))
     group by     1,2
     
-#####calculating inventory  
+#####calculating inventory, only calculate TY that has value
 select  pc11.SKU_ID  SKU_ID,
         pc11.LOCN_NBR  LOCN_NBR,
         max(pc11.WK_NBR)  WJXBFS1
