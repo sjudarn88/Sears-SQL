@@ -583,3 +583,9 @@ where	(a13.GOB_IND in ('N                             ')
 group by	a12.GRO_NBR,
 	a11.LOCN_NBR
 
+SEARS HIERARCHY
+SELECT GRO_NBR, CAT_NBR, VBS_NBR, DIV_NBR, LN_NBR, SBL_NBR, CLS_NBR, PRD_IRL_NBR, ITM_NBR
+FROM `syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku` 
+where CAT_NBR=706 AND VBS_NBR=604 AND DIV_NBR=75 AND LN_NBR=30 AND SBL_NBR=17 AND CLS_NBR=911
+  AND PRD_IRL_NBR=515929
+group by  GRO_NBR, CAT_NBR, VBS_NBR, DIV_NBR, LN_NBR, SBL_NBR, CLS_NBR, PRD_IRL_NBR, ITM_NBR
