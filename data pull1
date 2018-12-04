@@ -234,6 +234,7 @@ from
 	
 	
 	full outer join	
+	
 	(select	pa11.SKU_ID  SKU_ID,
 		max(pa11.SKU_DESC)  SKU_DESC,
 		max(pa11.DIV_NBR)  DIV_NBR,
@@ -264,11 +265,14 @@ from
 			a12.MTH_NBR,
 			a11.LOCN_NBR
 		)	pa11
-		join	(select	pc11.SKU_ID  SKU_ID,
+		
+		join	
+		(select	pc11.SKU_ID  SKU_ID,
 			pc11.MTH_NBR  MTH_NBR,
 			pc11.LOCN_NBR  LOCN_NBR,
-			max(pc11.WK_NBR)  WJXBFS1
-		from	(select	a11.WK_NBR  WK_NBR,
+			max(pc11.WK_NBR)  WJXBFS1 ###last week inventory
+		from	
+		(select	a11.WK_NBR  WK_NBR,
 			a11.SKU_ID  SKU_ID,
 			max(a13.SKU_DESC)  SKU_DESC,
 			max(a13.DIV_NBR)  DIV_NBR,
@@ -294,18 +298,20 @@ from
 			pc11.MTH_NBR,
 			pc11.LOCN_NBR
 		)	pa12
+		
+		
 		  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
 		pa11.MTH_NBR = pa12.MTH_NBR and 
 		pa11.SKU_ID = pa12.SKU_ID and 
 		pa11.WK_NBR = pa12.WJXBFS1)
 	group by	pa11.SKU_ID,
-		pa11.MTH_NBR,
-		pa11.LOCN_NBR
+			pa11.MTH_NBR,
+			pa11.LOCN_NBR
 	)	pa13
 	
 	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR) = pa13.LOCN_NBR and 
-	coalesce(pa11.MTH_NBR, pa12.MTH_NBR) = pa13.MTH_NBR and 
-	coalesce(pa11.SKU_ID, pa12.SKU_ID) = pa13.SKU_ID)
+		coalesce(pa11.MTH_NBR, pa12.MTH_NBR) = pa13.MTH_NBR and 
+		coalesce(pa11.SKU_ID, pa12.SKU_ID) = pa13.SKU_ID)
 	
 	
 	
