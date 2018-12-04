@@ -17,7 +17,7 @@ select  a11.SKU_ID  SKU_ID,
         join       `syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`          a15
           on         (a11.LOCN_NBR = a15.LOCN_NBR)
     where     a12.CUST_TIME_ID in (2)
-        and   a12.GRO_NBR in (803)
+        and   a14.GRO_NBR in (803)
         and   (a13.GOB_IND in ('N') or a15.STR_OPER_CD in ('1'))
         and   a11.TRS_TYP_CD in ('A', 'R', 'S')
         and   (a11.TYLY_DESC in ('TY') or a11.TYLY_DESC in ('LY'))
