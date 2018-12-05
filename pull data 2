@@ -53,8 +53,7 @@ period_inventory as (
                and a12.WOM in (4)
     		group by	a11.SKU_ID,
     			        a12.MTH_NBR,
-    			        a11.LOCN_NBR
-		having 		),
+    			        a11.LOCN_NBR ),
                   
 period_receipts as (
     select	a11.SKU_ID  SKU_ID,
