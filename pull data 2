@@ -92,7 +92,7 @@ period_agg as (
 		max(b14.SBL_DESC) SBL_DESC,
 		b14.CLS_NBR,
 		max(b14.CLS_DESC) CLS_DESC,
-		#b14.ITM_NBR,
+		b14.ITM_NBR,
 		b14.PRD_IRL_NBR,
 		max(PRD_DESC) PRD_DESC,
 		count(b11.SKU_ID) SKU_CN,
@@ -122,7 +122,7 @@ period_agg as (
 		      ,b14.LN_NBR
 		      ,b14.SBL_NBR
 		      ,b14.CLS_NBR
-		      #,b14.ITM_NBR
+		      ,b14.ITM_NBR
 		      ,b14.PRD_IRL_NBR ),
 ### at store-vbs level	
 final as(
