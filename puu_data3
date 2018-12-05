@@ -1,3 +1,5 @@
+SET QUERY_BAND= 'APP=MSTR;Project=ALEX3.0-Teradata;Report=Sears Ad Hoc;' FOR SESSION;
+
 select	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR)  MTH_NBR,
 	max(a17.MOY||' '|| a17.MTH_END_DT)  CustCol,
 	max(a17.MTH_END_DT)  MTH_END_DT,
@@ -46,7 +48,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 		  on 	(a11.SKU_ID = a13.SKU_ID)
 	where	(a13.GRO_NBR in (803)
 	 and a13.DIV_NBR in (31)
-	 and a12.MTH_NBR in (201808, 201809)
+	 and a12.MTH_NBR in (201809, 201810)
 	 and a11.LOCN_NBR in (1081)
 	 and a11.TRS_TYP_CD in ('A', 'R', 'S')
 	 and a11.TYLY_DESC in ('TY'))
@@ -83,7 +85,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 			  on 	(a11.WK_NBR = a13.WK_NBR)
 		where	(a12.GRO_NBR in (803)
 		 and a12.DIV_NBR in (31)
-		 and a13.MTH_NBR in (201808, 201809)
+		 and a13.MTH_NBR in (201809, 201810)
 		 and a11.TYLY_DESC in ('TY'))
 		group by	a11.WK_NBR,
 			a12.PRD_IRL_NBR,
@@ -114,7 +116,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 			  on 	(a11.WK_NBR = a13.WK_NBR)
 		where	(a12.GRO_NBR in (803)
 		 and a12.DIV_NBR in (31)
-		 and a13.MTH_NBR in (201808, 201809)
+		 and a13.MTH_NBR in (201809, 201810)
 		 and a11.TYLY_DESC in ('TY'))
 		group by	a11.WK_NBR,
 			a12.PRD_IRL_NBR,
@@ -166,7 +168,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 			  on 	(a11.WK_NBR = a13.WK_NBR)
 		where	(a12.GRO_NBR in (803)
 		 and a12.DIV_NBR in (31)
-		 and a13.MTH_NBR in (201808, 201809)
+		 and a13.MTH_NBR in (201809, 201810)
 		 and a11.TYLY_DESC in ('TY'))
 		group by	a11.WK_NBR,
 			a12.PRD_IRL_NBR,
@@ -197,7 +199,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 			  on 	(a11.WK_NBR = a13.WK_NBR)
 		where	(a12.GRO_NBR in (803)
 		 and a12.DIV_NBR in (31)
-		 and a13.MTH_NBR in (201808, 201809)
+		 and a13.MTH_NBR in (201809, 201810)
 		 and a11.TYLY_DESC in ('TY'))
 		group by	a11.WK_NBR,
 			a12.PRD_IRL_NBR,
@@ -237,7 +239,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 		  on 	(a11.LOCN_NBR = a14.LOCN_NBR)
 	where	(a13.GRO_NBR in (803)
 	 and a13.DIV_NBR in (31)
-	 and a12.MTH_NBR in (201808, 201809)
+	 and a12.MTH_NBR in (201809, 201810)
 	 and (a14.STR_FMT in ('DST')
 	 or (a11.LOCN_NBR in (1081)
 	 and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
@@ -255,7 +257,7 @@ from	(select	a13.PRD_IRL_NBR  PRD_IRL_NBR,
 	  on 	(coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) = a17.MTH_NBR)
 where	(a16.GRO_NBR in (803)
  and a16.DIV_NBR in (31)
- and coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) in (201808, 201809)
+ and coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR) in (201809, 201810)
  and coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR) in (1081))
 group by	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR),
 	a16.DIV_NBR,
@@ -264,3 +266,12 @@ group by	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR),
 	a16.CLS_ID,
 	coalesce(pa11.PRD_IRL_NBR, pa12.PRD_IRL_NBR, pa13.PRD_IRL_NBR, pa14.PRD_IRL_NBR),
 	coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR, pa13.LOCN_NBR, pa14.LOCN_NBR)
+
+[Analytical engine calculation steps:
+	1.  Calculate metric: <Sears Selling Margin $> at original data level
+	2.  Calculate metric: <Sears (+) Sell through> at original data level
+	3.  Calculate subtotal: <Total> 
+	4.  Calculate metric: <Sears Selling Margin $> at subtotal levels
+	5.  Calculate metric: <Sears (+) Sell through> at subtotal levels
+	6.  Perform cross-tabbing
+]
