@@ -19,7 +19,7 @@ with period_sales as (
     	where	(a15.STR_OPER_CD in ('1')
     	      and a13.GOB_IND in ('N')
     	      and a14.GRO_NBR in (803)
-    	      and a12.MTH_NBR in (201810, 201811)
+    	      and a12.MTH_NBR in (201809, 201810)
     	      and a11.TRS_TYP_CD in ('A', 'R', 'S')
     	      and a11.TYLY_DESC in ('TY'))
     	group by	a11.SKU_ID,
@@ -47,7 +47,7 @@ period_inventory as (
     		where	(a15.STR_OPER_CD in ('1')
     		       and a13.GOB_IND in ('N')
     		       and a14.GRO_NBR in (803)
-    		       and a12.MTH_NBR in (201810, 201811)
+    		       and a12.MTH_NBR in (201809, 201810)
     		       and a11.TYLY_DESC in ('TY'))
                and a12.WOM in (4)
     		group by	a11.SKU_ID,
@@ -71,7 +71,7 @@ period_receipts as (
     	where	(a15.STR_OPER_CD in ('1')
     	      and a13.GOB_IND in ('N')
     	      and a14.GRO_NBR in (803)
-    	      and a12.MTH_NBR in (201810, 201811)
+    	      and a12.MTH_NBR in (201809, 201810)
     	      and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
     	      and a15.STR_FMT not in ('DST'))
     	group by	a11.SKU_ID,
@@ -126,7 +126,8 @@ period_agg as (
 		      ,b14.PRD_IRL_NBR ),
 ### at store-vbs level	
 final as(
-	select c1.*, c2.TTL_SELLMARGIN, round(c1.CUM_SELLMARGIN/TTL_SELLMARGIN,2) as CUMPCT_SELLMARGIN,
+	select 	c1.*, c2.TTL_SELLMARGIN, 
+		c1.CUM_SELLMARGIN/c2.TTL_SELLMARGIN CUMPCT_SELLMARGIN,
 		c3.SEARSTOTALSALES SEARSTOTALSALES11,
 		c3.SEARSTOTALSALESUNITS SEARSTOTALSALESUNITS11,
 		c3.SEARSCOSTOFMDSESOLD SEARSCOSTOFMDSESOLD11,
@@ -138,17 +139,18 @@ final as(
 	from
 		(select *, sum(SEARSSELLMARGIN) over (partition by LOCN_NBR,VBS_NBR order by SEARSSELLMARGIN desc) as CUM_SELLMARGIN
 			from period_agg
-			where MTH_NBR=201810 ) c1
-		left join
+			where MTH_NBR=201809 ) c1
+		inner join
 		(select LOCN_NBR,VBS_NBR,sum(SEARSSELLMARGIN) as TTL_SELLMARGIN 
 			from period_agg
-			where MTH_NBR=201810
-			group by LOCN_NBR,VBS_NBR) c2
+			where MTH_NBR=201809 
+			group by LOCN_NBR,VBS_NBR
+			having TTL_SELLMARGIN >0) c2
 		on c1.LOCN_NBR=c2.LOCN_NBR and c1.VBS_NBR=c2.VBS_NBR
 		left join
 		(select    *
 		    	from period_agg
-			where MTH_NBR=201811) c3
+			where MTH_NBR=201810) c3
 		on c1.LOCN_NBR=c3.LOCN_NBR and c1.PRD_IRL_NBR=c3.PRD_IRL_NBR) 
 
 select * from final where CUMPCT_SELLMARGIN<=0.8
