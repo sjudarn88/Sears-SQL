@@ -277,7 +277,8 @@ group by	coalesce(pa11.MTH_NBR, pa12.MTH_NBR, pa13.MTH_NBR, pa14.MTH_NBR),
 ]
 
 ############################################################################
-full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
+full outer join	
+	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 		max(pa11.PRD_DESC)  PRD_DESC,
 		max(pa11.DIV_NBR)  DIV_NBR,
 		max(pa11.ITM_NBR0)  ITM_NBR0,
@@ -286,7 +287,9 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 		max(pa11.SEARSSTOREENDINGINVENTORYUNITS)  WJXBFS1,
 		max(pa11.SEARSSTOREENDINGINVENTORYUNIT1)  WJXBFS2,
 		max(pa11.SEARSSTOREENDINGINVENTORYUNIT2)  WJXBFS3
-	from	(select	a11.WK_NBR  WK_NBR,
+	from	
+	###
+		(select	a11.WK_NBR  WK_NBR, ##
 			a12.PRD_IRL_NBR  PRD_IRL_NBR,
 			max(a12.PRD_DESC)  PRD_DESC,
 			max(a12.DIV_NBR)  DIV_NBR,
@@ -313,11 +316,16 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 			a13.MTH_NBR,
 			a11.LOCN_NBR
 		)	pa11
-		join	(select	pc11.PRD_IRL_NBR  PRD_IRL_NBR,
+		
+		
+		join	
+		
+#	(select	pc11.PRD_IRL_NBR  PRD_IRL_NBR,
 			pc11.MTH_NBR  MTH_NBR,
 			pc11.LOCN_NBR  LOCN_NBR,
-			max(pc11.WK_NBR)  WJXBFS1
-		from	(select	a11.WK_NBR  WK_NBR,
+			max(pc11.WK_NBR)  WJXBFS1  ##
+		from	
+		(select	a11.WK_NBR  WK_NBR,
 			a12.PRD_IRL_NBR  PRD_IRL_NBR,
 			max(a12.PRD_DESC)  PRD_DESC,
 			max(a12.DIV_NBR)  DIV_NBR,
@@ -349,11 +357,13 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 			pc11.MTH_NBR,
 			pc11.LOCN_NBR
 		)	pa12
+		
 		  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
 		pa11.MTH_NBR = pa12.MTH_NBR and 
 		pa11.PRD_IRL_NBR = pa12.PRD_IRL_NBR and 
 		pa11.WK_NBR = pa12.WJXBFS1)
 	where	pa11.GODWFLAG2_1 = 1
+	
 	group by	pa11.PRD_IRL_NBR,
 		pa11.MTH_NBR,
 		pa11.LOCN_NBR
@@ -361,7 +371,11 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 	  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
 	pa11.MTH_NBR = pa12.MTH_NBR and 
 	pa11.PRD_IRL_NBR = pa12.PRD_IRL_NBR)
-	full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
+	
+	full outer join	
+
+####DC inventory	
+#	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 		max(pa11.PRD_DESC)  PRD_DESC,
 		max(pa11.DIV_NBR)  DIV_NBR,
 		max(pa11.ITM_NBR0)  ITM_NBR0,
@@ -396,11 +410,14 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 			a13.MTH_NBR,
 			a11.LOCN_NBR
 		)	pa11
-		join	(select	pc11.PRD_IRL_NBR  PRD_IRL_NBR,
+		join	
+#		
+		(select	pc11.PRD_IRL_NBR  PRD_IRL_NBR,
 			pc11.MTH_NBR  MTH_NBR,
 			pc11.LOCN_NBR  LOCN_NBR,
 			max(pc11.WK_NBR)  WJXBFS1
-		from	(select	a11.WK_NBR  WK_NBR,
+		from	
+		(select	a11.WK_NBR  WK_NBR,
 			a12.PRD_IRL_NBR  PRD_IRL_NBR,
 			max(a12.PRD_DESC)  PRD_DESC,
 			max(a12.DIV_NBR)  DIV_NBR,
@@ -434,7 +451,8 @@ full outer join	(select	pa11.PRD_IRL_NBR  PRD_IRL_NBR,
 		  on 	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
 		pa11.MTH_NBR = pa12.MTH_NBR and 
 		pa11.PRD_IRL_NBR = pa12.PRD_IRL_NBR and 
-		pa11.WK_NBR = pa12.WJXBFS1)
+		pa11.WK_NBR = pa12.WJXBFS1) ##filter out the last week
+		
 	group by	pa11.PRD_IRL_NBR,
 		pa11.MTH_NBR,
 		pa11.LOCN_NBR
