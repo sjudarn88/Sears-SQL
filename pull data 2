@@ -30,11 +30,11 @@ with period_sales as (
 
 period_inventory as (
     select	a11.SKU_ID  SKU_ID,
-    			  a12.MTH_NBR  MTH_NBR,
-    			  a11.LOCN_NBR  LOCN_NBR,
-    			  sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end)  SEARSSTOREENDINGINVENTORYUNITS,
-    			  sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYUNIT1,  
-            sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSDCENDINGINVENTORYUNITS
+    		a12.MTH_NBR  MTH_NBR,
+    		a11.LOCN_NBR  LOCN_NBR,
+    		sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end)  SEARSSTOREENDINGINVENTORYUNITS,
+    		sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYUNIT1,  
+           	sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSDCENDINGINVENTORYUNITS
     	 from	 `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_ins_tyly`		a11
     			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_weeks`           	a12
     			  on 	(a11.WK_NBR = a12.WK_NBR)
@@ -48,11 +48,13 @@ period_inventory as (
     		       and a13.GOB_IND in ('N')
     		       and a14.GRO_NBR in (803)
     		       and a12.MTH_NBR in (201809, 201810)
+		       and a12.WOM=4
     		       and a11.TYLY_DESC in ('TY'))
                and a12.WOM in (4)
     		group by	a11.SKU_ID,
     			        a12.MTH_NBR,
-    			        a11.LOCN_NBR ),
+    			        a11.LOCN_NBR
+		having 		),
                   
 period_receipts as (
     select	a11.SKU_ID  SKU_ID,
