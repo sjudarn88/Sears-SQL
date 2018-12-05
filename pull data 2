@@ -19,7 +19,7 @@ with period_sales as (
     	where	(a15.STR_OPER_CD in ('1')
     	      and a13.GOB_IND in ('N')
     	      and a14.GRO_NBR in (803)
-    	      and a12.MTH_NBR in (201809, 201810)
+    	      and a12.MTH_NBR in (201810, 201811)
     	      and a11.TRS_TYP_CD in ('A', 'R', 'S')
     	      and a11.TYLY_DESC in ('TY'))
     	group by	a11.SKU_ID,
@@ -35,19 +35,19 @@ period_inventory as (
     			  sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.PVE_UN_QT*a11.TY_CTR ELSE null end)  SEARSSTOREENDINGINVENTORYUNITS,
     			  sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('N') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSSTOREENDINGINVENTORYUNIT1,  
             sum(case when a11.INS_TYP_CD in ('H') AND a11.INS_SUB_TYP_CD not in ('R','D') and a11.DST_CD in ('Y') then a11.TTL_UN_QT*a11.TY_CTR ELSE 0 end)  SEARSDCENDINGINVENTORYUNITS
-    	 from	 `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_ins_tyly`	a11
+    	 from	 `syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_wkly_opr_ins_tyly`		a11
     			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_weeks`           	a12
     			  on 	(a11.WK_NBR = a12.WK_NBR)
-    			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`	    a13
+    			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`	a13
     			  on 	(a11.LOCN_NBR = a13.LOCN_NBR)
-    			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`	      a14
+    			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`	      	a14
     			  on 	(a11.SKU_ID = a14.SKU_ID)
     			join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`	        a15
     			  on 	(a11.LOCN_NBR = a15.LOCN_NBR)
     		where	(a15.STR_OPER_CD in ('1')
     		       and a13.GOB_IND in ('N')
     		       and a14.GRO_NBR in (803)
-    		       and a12.MTH_NBR in (201809, 201810)
+    		       and a12.MTH_NBR in (201810, 201811)
     		       and a11.TYLY_DESC in ('TY'))
                and a12.WOM in (4)
     		group by	a11.SKU_ID,
@@ -59,69 +59,100 @@ period_receipts as (
     		    a12.MTH_NBR  MTH_NBR,
     		    a11.LOCN_NBR  LOCN_NBR,
     		    sum(a11.RCP_UN_QT)  SEARSTOTALSTORERECEIPTSUNIT
-    	from	`syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_dly_opr_rcp`        a11
+    	from	`syw-analytics-repo-prod.alex_arp_views_prd.fact_srs_dly_opr_rcp`        	   a11
     		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_days`           a12
     		      on 	(a11.DAY_NBR = a12.DAY_NBR)
-    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`	 a13
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_cds_gob_locn`   a13
     		      on 	(a11.LOCN_NBR = a13.LOCN_NBR)
     		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku`	   a14
     		      on 	(a11.SKU_ID = a14.SKU_ID)
-    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`	     a15
+    		    join	`syw-analytics-repo-prod.alex_arp_views_prd.lu_shc_location`	   a15
     		      on 	(a11.LOCN_NBR = a15.LOCN_NBR)
     	where	(a15.STR_OPER_CD in ('1')
     	      and a13.GOB_IND in ('N')
     	      and a14.GRO_NBR in (803)
-    	      and a12.MTH_NBR in (201809, 201810)
+    	      and a12.MTH_NBR in (201810, 201811)
     	      and a11.RCP_TYP_CD in ('V', 'S', 'R', 'D')
     	      and a15.STR_FMT not in ('DST'))
     	group by	a11.SKU_ID,
-		            a12.MTH_NBR,
-		            a11.LOCN_NBR )
-          
-select  b11.MTH_NBR  MTH_NBR,
-    	b11.LOCN_NBR  LOCN_NBR,
-    	max(b11.LOCN_NM)  LOCN_NM,
-	b14.VBS_NBR,
-	max(b14.VBS_DESC) VBS_DESC,
-	b14.DIV_NBR,
-	max(b14.DIV_DESC) DIC_DESC,
-	b14.LN_NBR,
-	max(b14.LN_DESC) LN_DESC,
-	b14.SBL_NBR,
-	max(b14.SBL_DESC) SBL_DESC,
-	b14.CLS_NBR,
-	max(b14.CLS_DESC) CLS_DESC,
-	#b14.ITM_NBR,
-	b14.PRD_IRL_NBR,
-	max(PRD_DESC) PRD_DESC,
-	count(b11.SKU_ID) SKU_CN,
-	round(sum(b11.SEARSTOTALSALES),2) SEARSTOTALSALES, 
-	sum(b11.SEARSTOTALSALESUNITS) SEARSTOTALSALESUNITS,
-	round(sum(b11.SEARSCOSTOFMDSESOLD),2) SEARSCOSTOFMDSESOLD,
-        sum(b12.SEARSSTOREENDINGINVENTORYUNITS) SEARSSTOREENDINGINVENTORYUNITS,
-        sum(b12.SEARSSTOREENDINGINVENTORYUNIT1) SEARSSTOREENDINGINVENTORYUNIT1,
-        sum(b12.SEARSDCENDINGINVENTORYUNITS) SEARSDCENDINGINVENTORYUNITS,
-        sum(b13.SEARSTOTALSTORERECEIPTSUNIT) SEARSTOTALSTORERECEIPTSUNIT
-    from period_sales b11
-    	left join period_inventory b12
-    	on (b11.LOCN_NBR = b12.LOCN_NBR and
-			    b11.MTH_NBR = b12.MTH_NBR and 
-			    b11.SKU_ID = b12.SKU_ID )
-    	left join period_receipts b13
-    	on (b11.LOCN_NBR = b13.LOCN_NBR and
-			    b11.MTH_NBR = b13.MTH_NBR and 
-			    b11.SKU_ID = b13.SKU_ID )
-    	left join `syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku` b14
-    	on b11.SKU_ID = b14.SKU_ID
-     group by b11.MTH_NBR
-     	      ,b11.LOCN_NBR
-	      ,b14.VBS_NBR
-	      ,b14.DIV_NBR
-	      ,b14.LN_NBR
-	      ,b14.SBL_NBR
-	      ,b14.CLS_NBR
-	      #,b14.ITM_NBR
-	      ,b14.PRD_IRL_NBR
-     
+		        a12.MTH_NBR,
+		        a11.LOCN_NBR ),
+			    
+period_agg as ( 
+	select  b11.MTH_NBR  MTH_NBR,
+	    	b11.LOCN_NBR  LOCN_NBR,
+	    	max(b11.LOCN_NM)  LOCN_NM,
+		b14.VBS_NBR,
+		max(b14.VBS_DESC) VBS_DESC,
+		b14.DIV_NBR,
+		max(b14.DIV_DESC) DIC_DESC,
+		b14.LN_NBR,
+		max(b14.LN_DESC) LN_DESC,
+		b14.SBL_NBR,
+		max(b14.SBL_DESC) SBL_DESC,
+		b14.CLS_NBR,
+		max(b14.CLS_DESC) CLS_DESC,
+		#b14.ITM_NBR,
+		b14.PRD_IRL_NBR,
+		max(PRD_DESC) PRD_DESC,
+		count(b11.SKU_ID) SKU_CN,
+		round(sum(b11.SEARSTOTALSALES),2) SEARSTOTALSALES, 
+		sum(b11.SEARSTOTALSALESUNITS) SEARSTOTALSALESUNITS,
+		round(sum(b11.SEARSCOSTOFMDSESOLD),2) SEARSCOSTOFMDSESOLD,
+		round(sum(b11.SEARSTOTALSALES)-sum(b11.SEARSCOSTOFMDSESOLD),2) SEARSSELLMARGIN,
+	        sum(b12.SEARSSTOREENDINGINVENTORYUNITS) SEARSSTOREENDINGINVENTORYUNITS,
+	        sum(b12.SEARSSTOREENDINGINVENTORYUNIT1) SEARSSTOREENDINGINVENTORYUNIT1,
+	        sum(b12.SEARSDCENDINGINVENTORYUNITS) SEARSDCENDINGINVENTORYUNITS,
+	        sum(b13.SEARSTOTALSTORERECEIPTSUNIT) SEARSTOTALSTORERECEIPTSUNIT
+	    from period_sales b11
+	    	left join period_inventory b12
+	    	on (b11.LOCN_NBR = b12.LOCN_NBR and
+				    b11.MTH_NBR = b12.MTH_NBR and 
+				    b11.SKU_ID = b12.SKU_ID )
+	    	left join period_receipts b13
+	    	on (b11.LOCN_NBR = b13.LOCN_NBR and
+				    b11.MTH_NBR = b13.MTH_NBR and 
+				    b11.SKU_ID = b13.SKU_ID )
+	    	left join `syw-analytics-repo-prod.alex_arp_views_prd.lu_srs_product_sku` b14
+	    	on b11.SKU_ID = b14.SKU_ID
+	     group by b11.MTH_NBR
+	     	      ,b11.LOCN_NBR
+		      ,b14.VBS_NBR
+		      ,b14.DIV_NBR
+		      ,b14.LN_NBR
+		      ,b14.SBL_NBR
+		      ,b14.CLS_NBR
+		      #,b14.ITM_NBR
+		      ,b14.PRD_IRL_NBR ),
+### at store-vbs level	
+final as(
+	select c1.*, c2.TTL_SELLMARGIN, round(c1.CUM_SELLMARGIN/TTL_SELLMARGIN,2) as CUMPCT_SELLMARGIN,
+		c3.SEARSTOTALSALES SEARSTOTALSALES11,
+		c3.SEARSTOTALSALESUNITS SEARSTOTALSALESUNITS11,
+		c3.SEARSCOSTOFMDSESOLD SEARSCOSTOFMDSESOLD11,
+		c3.SEARSSELLMARGIN SEARSSELLMARGIN11,
+		c3.SEARSSTOREENDINGINVENTORYUNITS SEARSSTOREENDINGINVENTORYUNITS11,
+		c3.SEARSSTOREENDINGINVENTORYUNIT1 SEARSSTOREENDINGINVENTORYUNIT111,
+		c3.SEARSDCENDINGINVENTORYUNITS SEARSDCENDINGINVENTORYUNITS11,
+		c3.SEARSTOTALSTORERECEIPTSUNIT SEARSTOTALSTORERECEIPTSUNIT11	
+	from
+		(select *, sum(SEARSSELLMARGIN) over (partition by LOCN_NBR,VBS_NBR order by SEARSSELLMARGIN desc) as CUM_SELLMARGIN
+			from period_agg
+			where MTH_NBR=201810 ) c1
+		left join
+		(select LOCN_NBR,VBS_NBR,sum(SEARSSELLMARGIN) as TTL_SELLMARGIN 
+			from period_agg
+			where MTH_NBR=201810
+			group by LOCN_NBR,VBS_NBR) c2
+		on c1.LOCN_NBR=c2.LOCN_NBR and c1.VBS_NBR=c2.VBS_NBR
+		left join
+		(select    *
+		    	from period_agg
+			where MTH_NBR=201811) c3
+		on c1.LOCN_NBR=c3.LOCN_NBR and c1.PRD_IRL_NBR=c3.PRD_IRL_NBR) 
+
+select * from final where CUMPCT_SELLMARGIN<=0.8
+	
+	     
     
                 
