@@ -452,11 +452,14 @@ full outer join
 		pa11.MTH_NBR = pa12.MTH_NBR and 
 		pa11.PRD_IRL_NBR = pa12.PRD_IRL_NBR and 
 		pa11.WK_NBR = pa12.WJXBFS1) ##filter out the last week
-		
-	group by	pa11.PRD_IRL_NBR,
-		pa11.MTH_NBR,
-		pa11.LOCN_NBR
-	)	pa13
+
+
+###joinings
+	(pa11.LOCN_NBR = pa12.LOCN_NBR and 
+	pa11.MTH_NBR = pa12.MTH_NBR and 
+	pa11.PRD_IRL_NBR = pa12.PRD_IRL_NBR)
+
+
 	  on 	(coalesce(pa11.LOCN_NBR, pa12.LOCN_NBR) = pa13.LOCN_NBR and 
 	coalesce(pa11.MTH_NBR, pa12.MTH_NBR) = pa13.MTH_NBR and 
 	coalesce(pa11.PRD_IRL_NBR, pa12.PRD_IRL_NBR) = pa13.PRD_IRL_NBR)
