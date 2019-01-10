@@ -1,21 +1,21 @@
 with store_members_map as (
   select locnnbr, lyltycardnbr, SUM(UnitQty) as UNITS
     from `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` as a
-LEFT JOIN `syw-analytics-repo-prod.cbr_mart_tbls.sywr_srs_soar_bu` B 
-ON a.ProdIrlNbr=b.prd_irl_no
+      LEFT JOIN `syw-analytics-repo-prod.cbr_mart_tbls.sywr_srs_soar_bu` B 
+      ON a.ProdIrlNbr=b.prd_irl_no
 --where trandt between timestamp('2017-04-30') and timestamp('2017-12-30') -- 2017 fall winter in season
-WHERE TranDt >'2017-04-01' --week 14
-and TranDt <'2018-03-31' -- week 48 date to be changed according to the reqiurement
-AND FmtSbtyp IN ('A','B','C','D','M')
-AND lyltycardnbr IS NOT NULL  -- force member only sales
-AND SrsKmtInd='S'
-and trantypeind = 'S'
-AND SrsDvsnNbr NOT IN (0,79)
-and locnnbr <> 9300
-and ringinglocnnbr  <> 9300
-and b.soar_no in (101,102,103,104,105)
-group by 1,2
-having UNITS between 1 and 200
+  WHERE TranDt >'2017-04-01' --week 14
+    and TranDt <'2018-03-31' -- week 48 date to be changed according to the reqiurement
+    AND FmtSbtyp IN ('A','B','C','D','M')
+    AND lyltycardnbr IS NOT NULL  -- force member only sales
+    AND SrsKmtInd='S'
+    and trantypeind = 'S'
+    AND SrsDvsnNbr NOT IN (0,79)
+    and locnnbr <> 9300
+    and ringinglocnnbr  <> 9300
+    and b.soar_no in (101,102,103,104,105)
+  group by 1,2
+  having UNITS between 1 and 200
 --order by 3
     --change it to last 12 months/ starting from 2017
 )
