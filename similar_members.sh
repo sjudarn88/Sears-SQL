@@ -3,7 +3,8 @@ with store_members_map as (
     from `syw-analytics-repo-prod.l2_enterpriseanalytics.postrandtl` as a
       LEFT JOIN `syw-analytics-repo-prod.cbr_mart_tbls.sywr_srs_soar_bu` B 
       ON a.ProdIrlNbr=b.prd_irl_no
---where trandt between timestamp('2017-04-30') and timestamp('2017-12-30') -- 2017 fall winter in season
+--where trandt between timestamp('2017-04-30') and timestamp('2017-12-30') 
+-- 2017 fall winter in season
   WHERE TranDt >'2017-04-01' --week 14
     and TranDt <'2018-03-31' -- week 48 date to be changed according to the reqiurement
     AND FmtSbtyp IN ('A','B','C','D','M')
