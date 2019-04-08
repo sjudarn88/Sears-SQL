@@ -1,0 +1,136 @@
+create or replace view "STAGING_DB"."PUBLIC"."DS_ALERTS_ALG" copy grants as
+with t1 as
+    (
+        select * from
+                (select date from "STAGING_DB"."PUBLIC"."DATE_DIMENTION"
+                    where date between dateadd(day,-90,current_date()::timestamp_ntz) and dateadd(day,-1,current_date()::timestamp_ntz)
+                ) d1 cross join
+                (select
+                   data_source
+                   ,partner
+                   ,upcode
+                   ,min(to_date(ifnull(datetime_funnel,datetime_booking))) as start_date
+                from "PRODUCTION_DB"."PUBLIC"."WEB_KASA_MERGED"
+                where ifnull(datetime_funnel, datetime_booking)>dateadd(day,-90,current_date()::timestamp_ntz)
+                    and upcode not ilike ('%-99')
+                group by 1,2,3) d2
+     )
+     ,t2 as (
+        select
+               to_date(ifnull(datetime_funnel,datetime_booking)) as date
+               ,data_source
+               ,partner
+               ,upcode
+               ,count(distinct case when data_source='web' then cid else null end) as user_num
+               ,sum(case when data_source='kasa' and is_pm_applied=TRUE then 1 else 0 end) as app_num
+               ,sum(case when data_source='kasa' and is_booking=TRUE then 1 else 0 end) as booking_num
+            from "PRODUCTION_DB"."PUBLIC"."WEB_KASA_MERGED"
+            where ifnull(datetime_funnel, datetime_booking)>dateadd(day,-90,current_date()::timestamp_ntz)
+            group by 1,2,3,4
+     ) 
+     ,t3 as (
+       select t1.*
+              ,dayofweek(t1.date) as day_of_wk
+              ,weekofyear(t1.date) as wk_num
+              ,ifnull(t2.user_num,0) as user_num
+              ,ifnull(t2.app_num,0) as app_num
+              ,ifnull(t2.booking_num,0) as booking_num
+        from t1 left join t2 
+             on t1.date=t2.date and t1.data_source=t2.data_source
+             and t1.partner=t2.partner and t1.upcode=t2.upcode
+     )
+     ,ma_3d as (
+        select t3.*
+             ,avg(t4.user_num) as user_ma3d
+             ,avg(t4.app_num) as app_ma3d
+             ,avg(t4.booking_num) as book_ma3d
+        from t3 join t3 as t4
+             on  t3.data_source=t4.data_source
+             and t3.partner=t4.partner
+             and t3.upcode=t4.upcode
+             and t4.date between dateadd(day,-3,t3.date) and t3.date
+        group by 1,2,3,4,5,6,7,8,9,10
+     ) 
+     ,ma_7d as (
+        select t3.*
+             ,avg(t4.user_num) as user_ma7d
+             ,avg(t4.app_num) as app_ma7d
+             ,avg(t4.booking_num) as book_ma7d
+        from t3 join t3 as t4
+             on  t3.data_source=t4.data_source
+             and t3.partner=t4.partner
+             and t3.upcode=t4.upcode
+             and t4.date between dateadd(day,-7,t3.date) and dateadd(day,-1,t3.date)
+        group by 1,2,3,4,5,6,7,8,9,10
+     )   
+     ,wk_avg as (
+        select  data_source,partner,upcode,wk_num
+                ,avg(user_num) as user_avg_wk
+                ,avg(app_num) as app_avg_wk
+                ,avg(booking_num) as book_avg_wk
+                ,stddev(user_num) as user_std_wk
+                ,stddev(app_num) as app_std_wk
+                ,stddev(booking_num) as book_std_wk
+        from t3
+        group by 1,2,3,4
+     )
+     ,join_all as (
+        select w1.*,w2.user_avg_wk,w2.app_avg_wk,w2.book_avg_wk,w2.user_std_wk,w2.app_std_wk,w2.book_std_wk
+                ,w3.user_ma3d,w3.app_ma3d,w3.book_ma3d
+        from ma_7d w1
+            left join wk_avg w2  
+            on w1.data_source=w2.data_source and w1.partner=w2.partner 
+            and w1.upcode=w2.upcode and w1.wk_num=w2.wk_num
+            left join ma_3d w3
+            on w1.data_source=w3.data_source and w1.partner=w3.partner 
+            and w1.upcode=w3.upcode and w1.date=w3.date
+    )     
+    ,WOD_effect as (
+         select *,lag(user_num-user_avg_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_diff_1wk
+                 ,lag(user_num-user_avg_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_diff_2wk
+                 ,lag(user_num-user_avg_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_diff_3wk
+                 ,lag(app_num-app_avg_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_diff_1wk
+                 ,lag(app_num-app_avg_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_diff_2wk
+                 ,lag(app_num-app_avg_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_diff_3wk
+                 ,lag(booking_num-book_avg_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_diff_1wk
+                 ,lag(booking_num-book_avg_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_diff_2wk
+                 ,lag(booking_num-book_avg_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_diff_3wk
+                 ,lag(user_std_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_std_1wk
+                 ,lag(user_std_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_std_2wk
+                 ,lag(user_std_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as user_std_3wk
+                 ,lag(app_std_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_std_1wk
+                 ,lag(app_std_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_std_2wk
+                 ,lag(app_std_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as app_std_3wk
+                 ,lag(book_std_wk,1,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_std_1wk
+                 ,lag(book_std_wk,2,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_std_2wk
+                 ,lag(book_std_wk,3,0) over (partition by data_source,partner,upcode,day_of_wk order by wk_num) as book_std_3wk
+            from join_all
+    )
+    ,threshold as (
+           select *
+                ,floor(user_ma7d+ 0.5*user_diff_1wk + 0.3*user_diff_2wk + 0.2*user_diff_3wk - 3*(0.5*user_std_1wk + 0.3*user_std_2wk + 0.2*user_std_3wk),0) as user_lower_bound
+                ,ceil(user_ma7d+ 0.5*user_diff_1wk + 0.3*user_diff_2wk + 0.2*user_diff_3wk + 3*(0.5*user_std_1wk + 0.3*user_std_2wk + 0.2*user_std_3wk),0) as user_upper_bound
+                ,floor(app_ma7d+ 0.5*app_diff_1wk + 0.3*app_diff_2wk + 0.2*app_diff_3wk - 3*(0.5*app_std_1wk + 0.3*app_std_2wk + 0.2*app_std_3wk),0) as app_lower_bound
+                ,ceil(app_ma7d+ 0.5*app_diff_1wk + 0.3*app_diff_2wk + 0.2*app_diff_3wk + 3*(0.5*app_std_1wk + 0.3*app_std_2wk + 0.2*app_std_3wk),0) as app_upper_bound
+                ,floor(book_ma7d+ 0.5*book_diff_1wk + 0.3*book_diff_2wk + 0.2*book_diff_3wk - 3*(0.5*book_std_1wk + 0.3*book_std_2wk + 0.2*book_std_3wk),0) as book_lower_bound
+                ,ceil(book_ma7d+ 0.5*book_diff_1wk + 0.3*book_diff_2wk + 0.2*book_diff_3wk + 3*(0.5*book_std_1wk + 0.3*book_std_2wk + 0.2*book_std_3wk),0) as book_upper_bound
+           from WOD_effect
+     )
+     ,cutoff_rule as (
+            select *, 
+                case when (user_ma7d>500 or user_num>500) and user_num > user_upper_bound then 'great_jump'
+                     when (user_ma7d>500 and (user_num < user_lower_bound or user_num = 0)) or (user_ma7d>250 and user_ma3d=0) then 'flag_low'
+                     else '' end as user_flag,
+                case when (app_ma7d>30 or app_num>30) and app_num > app_upper_bound then 'great_jump'
+                     when app_ma7d>30 and (app_num < app_lower_bound or app_num = 0) or (app_ma7d>15 and app_ma3d=0) then 'flag_low'
+                     else '' end as app_flag,  
+                case when (book_ma7d>10 or booking_num>10) and booking_num > book_upper_bound then 'great_jump'
+                     when book_ma7d>3 and (booking_num < book_lower_bound or booking_num = 0) or (book_ma7d>3 and book_ma3d=0) then 'flag_low'
+                     else '' end as book_flag
+            from threshold
+      )
+    
+    select  date,data_source,partner,upcode,start_date,user_num,app_num,booking_num,user_ma7d,app_ma7d,book_ma7d
+            ,user_lower_bound,user_upper_bound,app_lower_bound,app_upper_bound,book_lower_bound,book_upper_bound
+            ,user_flag,app_flag,book_flag
+        from cutoff_rule;
