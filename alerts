@@ -3,7 +3,7 @@ with t1 as
     (
         select * from
                 (select date from "STAGING_DB"."PUBLIC"."DATE_DIMENTION"
-                    where date between dateadd(day,-90,current_date()::timestamp_ntz) and dateadd(day,-1,current_date()::timestamp_ntz)
+                    where date between dateadd(day,-90,current_date()::timestamp_ntz) and to_date(current_date()::timestamp_ntz)
                 ) d1 cross join
                 (select
                    data_source
