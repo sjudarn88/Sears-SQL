@@ -68,16 +68,38 @@ with t as
         on a.day=b.day and a.upcode=b.upcode and a.device_type=b.device_type and a.cid=b.cid  
         group by 1,2,3
     )
+    ,disable_autopay as(
+      select day,upcode,device_type,count(cid) as dis_autopay
+        from
+        (select to_date(date) as day,upcode,device_type,cid
+               ,max(case when state_code=96 then date else date_trunc('day', date) end) as c1
+               ,max(case when state_code=97 then date else date_trunc('day', date) end) as c2
+          from "PRODUCTION_DB"."PUBLIC"."PAY_MONTHLY_FUNNEL"
+          where to_date(date)>='2019-04-01' and state_code in (96,97)
+              and upcode in ('UP-73591399-1'
+                              ,'UP-98841375-8'
+                              ,'UP-49689944-1'
+                              ,'UP-24792348-1'
+                              ,'UP-60702809-1'
+                              ,'UP-94385876-1'
+                              ,'UP-98145157-50')
+          group by 1,2,3,4
+          having c2>c1) a
+      group by 1,2,3
+    )
         
     select p.*,ifnull(visa_blocking,0) as visa_blocking
             ,ifnull(v1.visa2pm_booking,0) as visa2pm_booking
             ,ifnull(v2.visa2confirmed_loan,0) as visa2confirmed_loan
             ,ifnull(n.noblock,0) as noblock
             ,ifnull(n.noblock2pm_booking,0) as noblock2pm_booking
+            ,ifnull(dis_autopay,0) as dis_autopay
         from partial_funnel p
         left join visa1 v1
         on p.day=v1.day and p.upcode=v1.upcode and p.device_type=v1.device_type
         left join visa2 v2
         on p.day=v2.day and p.upcode=v2.upcode and p.device_type=v2.device_type
         left join non_block n
-        on p.day=n.day and p.upcode=n.upcode and p.device_type=n.device_type;
+        on p.day=n.day and p.upcode=n.upcode and p.device_type=n.device_type
+        left join disable_autopay d
+        on p.day=d.day and p.upcode=d.upcode and p.device_type=d.device_type;
