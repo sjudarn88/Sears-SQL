@@ -1,0 +1,403 @@
+create or replace view "STAGING_DB"."PUBLIC"."JL_WEB_KASA_MERGED_VIEW" as
+
+with
+kf as (
+select
+  order_id,
+  origin,
+  iff(origin = final or diff_days > 2, arrival_apc, final) as destination
+from
+(
+select *,
+  row_number() over (partition by ORDER_ID order by diff_days desc, index) as break_point
+from
+(
+select *,
+  ifnull(datediff(day, DEPARTURE_TIME, next_DEPARTURE_TIME), 0) as diff_days
+from
+(
+select *,
+  FIRST_VALUE(DEPARTURE_APC) over (partition by ORDER_ID order by INDEX) as origin,
+  LAST_VALUE(ARRIVAL_APC) over (partition by ORDER_ID order by INDEX) as final,
+  lead(DEPARTURE_TIME) over (partition by ORDER_ID order by INDEX) as next_DEPARTURE_TIME
+FROM
+(
+select
+  t.*,
+  i.index,
+  TRY_TO_DATE(INSERT(INSERT(trim(i.value:departure_time, '"'), 7, 0, '-'), 5, 0, '-')) as departure_time,
+  TRY_TO_DATE(INSERT(INSERT(trim(i.value:arrival_time, '"'), 7, 0, '-'), 5, 0, '-')) as arrival_time,
+  trim(i.value:departure_apc, '"') as departure_apc,
+  trim(i.value:arrival_apc, '"') as arrival_apc
+from
+(
+select order_id, parse_json(AIR_RESERVATIONS)[0]:itinerary as itinerary
+from
+  (select order_id, any_value(AIR_RESERVATIONS) as AIR_RESERVATIONS from "PRODUCTION_DB"."PUBLIC"."BI_AIR_RESERVATIONS" group by 1)
+--where order_id in ('1dda1b84-0233-4540-abf6-4b00357e11c3', 'c86271e4-4a08-42b6-8c7f-8476036df332', '61f5e938-9b3e-4984-9b56-dbc1daa56c69')
+) t,
+lateral flatten(input => t.itinerary) i
+)
+)
+)
+)
+where break_point = 1
+),
+
+k as (
+select
+  'kasa' as data_source,
+  a.upcode,
+  partner_confirmation as booking_ref,
+  a.appdate as datetime_funnel,
+  null as is_pm_offered,
+  null as is_pm_selected,
+  a.applid is not null as is_pm_applied,
+  ifnull(a.status in ('aa', 'approved'), false) as is_pm_verified,
+  ifnull(a.fico >= 550, false) as is_pm_fico_ge_550,
+  ifnull(a.status = 'approved', false) as is_pm_approved,
+  ifnull(a.hard_pull or l.applicationid is not null, false) as is_pm_accepted,
+  nullif(l.REPORT_AS_LOAN, false) as is_booking,
+  a.cid,
+  a.AGENT_EMAIL,
+  l.loandate as datetime_booking,
+  l.purchaseamount as amount,
+  l.loanamount,
+  (o.TOTAL_INSURANCE_PRICE / 100)::numeric(38,2) as insurance_amount,
+  null as CURRENCY_CODE,
+  'pay monthly' as payment_option,
+  p.bin as CARD_BIN,
+  null as BOOKING_PAGE,
+  a.TRAVEL_TYPE,
+  o.TOTAL_TRAVELERS as pax,
+  a.device_type,
+  o.TRIP_START_DATE as travel_start,
+  o.TRIP_END_DATE as travel_end,
+  null as cruise_origin,
+  null as cruise_destination,
+  iff(TRAVELOD > '' and TRAVELTYPE = 'cruise', lower(TRAVELOD), null) as CRUISE_LINE,
+  null as SHIP_NAME,
+  null as STATEROOM,
+  --iff(TRAVELOD > '' and TRAVELTYPE like 'air%', lower(left(TRAVELOD, 3)), null) as flight_origin,
+  --iff(TRAVELOD > '' and TRAVELTYPE like 'air%', lower(right(TRAVELOD, 3)), null) as flight_destination,
+  kf.origin as flight_origin,
+  kf.destination as flight_destination,
+  null as AIRLINE,
+  null as FARE_CLASS,
+  iff(TRAVELOD > '' and TRAVELTYPE = 'hotel', trim(split_part(split_part(lower(TRAVELOD), '-', 1), '(', 1)), null) as HOTEL_NAME,
+  null as addon_bags_amount,
+  null as addon_seats_amount,
+  null as addon_cars_amount,
+  null as addon_access_amount,
+  null as addon_activity_amount,
+  null as experiments
+from "PRODUCTION_DB"."PUBLIC"."BI_APPLICATION" a
+left outer join "PRODUCTION_DB"."PUBLIC"."BI_LOAN" l
+on a.applid = l.applicationid
+left outer join "PRODUCTION_DB"."PUBLIC"."BI_ORDERS" o
+on a.applid = o.application_id
+left outer join kf
+on a.order_id = kf.order_id
+left outer join
+  (
+  select *
+  from
+  (
+  select *, ROW_NUMBER() OVER (partition by loan_id order by INVOICE_NO, type) as n
+  from "PRODUCTION_DB"."PUBLIC"."BI_PAYMENTS"
+  where bin not like '%*%'
+  )
+  where n = 1
+  ) p
+on l.loanid = p.loan_id
+where to_date(a.appdate) <= (select to_date(max(DATE)) from "PRODUCTION_DB"."PUBLIC"."PAY_MONTHLY_FUNNEL")
+and (l.loandate is null or to_date(l.loandate) <= (select to_date(max(DATE)) from "PRODUCTION_DB"."PUBLIC"."PAY_MONTHLY_FUNNEL"))
+),
+
+wf as (
+select
+  'web' as data_source,
+  upcode,
+  null as booking_ref,
+  date as datetime_funnel,
+  ifnull(STATE_CODE = 44, false) as is_pm_offered,
+  ifnull(STATE_CODE = 6, false) as is_pm_selected,
+  null as is_pm_applied,
+  null as is_pm_verified,
+  null as is_pm_fico_ge_550,
+  null as is_pm_approved,
+  null as is_pm_accepted,
+  null as is_booking,
+  cid,
+  null as AGENT_EMAIL,
+  null as datetime_booking,
+  null as amount,
+  null as loanamount,
+  null as insurance_amount,
+  null as CURRENCY_CODE,
+  null as payment_option,
+  null as CARD_BIN,
+  null as BOOKING_PAGE,
+  null as TRAVEL_TYPE,
+  null as pax,
+  device_type,
+  null as travel_start,
+  null as travel_end,
+  null as cruise_origin,
+  null as cruise_destination,
+  null as CRUISE_LINE,
+  null as SHIP_NAME,
+  null as STATEROOM,
+  null as flight_origin,
+  null as flight_destination,
+  null as AIRLINE,
+  null as FARE_CLASS,
+  null as HOTEL_NAME,
+  null as addon_bags_amount,
+  null as addon_seats_amount,
+  null as addon_cars_amount,
+  null as addon_access_amount,
+  null as addon_activity_amount,
+  EXPERIMENTS
+from "PRODUCTION_DB"."PUBLIC"."PAY_MONTHLY_FUNNEL"
+where ip not in ('66.201.49.52', '67.188.119.176', '73.170.79.37', '116.193.163.2', '189.217.16.37', '189.236.9.26', '203.190.154.36')
+and STATE_CODE in (1, 44, 6)
+),
+
+c as (
+select
+  upcode, booking_ref, cruise_origin, cruise_destination, CRUISE_LINE, SHIP_NAME,
+  case when STATEROOM like '%balcony%' then 'balcony'
+       when STATEROOM like '%inside%' then 'inside'
+       when STATEROOM like '%interior%' or STATEROOM like '%室内%' or STATEROOM like '%интерьер%' then 'interior'
+       when STATEROOM like '%ocean%view%' or STATEROOM like '%vista al mar%' then 'oceanview'
+       when STATEROOM like '%suite%' then 'suite'
+       when STATEROOM in ('haven', 'studio', 'spa', 'concierge') then STATEROOM
+       when STATEROOM is null then null
+       else 'other'
+       end as STATEROOM
+from
+(
+select
+  UPCODE,
+  BOOKING_REF,
+  DEPARTURE_PORT as cruise_origin,
+  ARRIVAL_PORT as cruise_destination,
+  CRUISE_LINE,
+  SHIP_NAME,
+  lower(STATEROOM) as STATEROOM,
+  row_number() over (partition by upcode, booking_ref order by DEPARTURE_DATE, ARRIVAL_DATE) as row_number
+from "PRODUCTION_DB"."PUBLIC"."PARTNER_CRUISES"
+)
+where row_number = 1
+),
+
+f as (
+select upcode, booking_ref, DEPARTURE_APC as flight_origin, ARRIVAL_APC as flight_destination, AIRLINE, FARE_CLASS
+from
+(
+select *, row_number() over (partition by upcode, booking_ref order by DEPARTURE_DATE, ARRIVAL_DATE) as row_number
+from "PRODUCTION_DB"."PUBLIC"."PARTNER_FLIGHTS"
+)
+where row_number = 1
+),
+
+h as (
+select upcode, booking_ref, min(HOTEL_NAME) as HOTEL_NAME
+from "PRODUCTION_DB"."PUBLIC"."PARTNER_HOTELS"
+group by 1,2
+),
+
+addon as (
+select
+  upcode,
+  booking_ref,
+  case when addon_name in ('bags', 'bag') then 'bags'
+       when addon_name in ('seats', 'seat', 'seat reservation') then 'seats'
+       when addon_name in ('flight flex', 'cancel for any reason') then 'insurance'
+       when addon_name like '%dining%' or addon_name like '%breakfast%' or addon_name like '%dinner%' or addon_name like '%meal%' then 'food'
+       when addon_name like '%discount%' then 'discount'
+       when addon_name like '%transportation%' or addon_name like '%shuttle%' then 'transportation'
+       when addon_name in ('priority access', 'early park admission') or addon_name like '%shortcut%' then 'access'
+       when addon_name in ('activities', 'free universal express unlimited ride access') or addon_name like '%ticket%' or addon_name like '% pass' or addon_name like '%pass %' or addon_name like '%reservation for%' then 'activity'
+       else addon_name
+       end as addon_name,
+  addon_price
+from (select upcode, booking_ref, lower(addon_name) as addon_name, addon_price from "PRODUCTION_DB"."PUBLIC"."PARTNER_ADDONS")
+),
+
+a as (
+select
+  upcode,
+  booking_ref,
+  sum(iff(addon_name = 'bags', ifnull(addon_price, 0), null)) as addon_bags_amount,
+  sum(iff(addon_name = 'seats', ifnull(addon_price, 0), null)) as addon_seats_amount,
+  sum(iff(addon_name = 'cars', ifnull(addon_price, 0), null)) as addon_cars_amount,
+  sum(iff(addon_name = 'access', ifnull(addon_price, 0), null)) as addon_access_amount,
+  sum(iff(addon_name = 'activity', ifnull(addon_price, 0), null)) as addon_activity_amount
+from addon
+group by 1,2
+),
+
+wb as (
+select
+  'web' as data_source,
+  b.upcode,
+  b.booking_ref,
+  b.datetime_funnel,
+  b.is_pm_offered,
+  b.is_pm_selected,
+  b.is_pm_applied,
+  b.is_pm_verified,
+  b.is_pm_fico_ge_550,
+  b.is_pm_approved,
+  b.is_pm_accepted,
+  b.is_booking,
+  b.cid,
+  b.AGENT_EMAIL,
+  b.datetime_booking,
+  b.amount,
+  b.loanamount,
+  b.insurance_amount,
+  b.CURRENCY_CODE,
+  b.payment_option,
+  b.CARD_BIN,
+  b.BOOKING_PAGE,
+  NULLIF(TRIM(NVL2(f.upcode, 'air+', '') || NVL2(c.upcode, 'cruise+', '') || NVL2(h.upcode, 'hotel+', ''), '+'), '') as TRAVEL_TYPE,
+  b.pax,
+  b.device_type,
+  b.travel_start,
+  b.travel_end,
+  c.cruise_origin,
+  c.cruise_destination,
+  c.CRUISE_LINE,
+  c.SHIP_NAME,
+  c.STATEROOM,
+  f.flight_origin,
+  f.flight_destination,
+  f.AIRLINE,
+  f.FARE_CLASS,
+  h.HOTEL_NAME,
+  a.addon_bags_amount,
+  a.addon_seats_amount,
+  a.addon_cars_amount,
+  a.addon_access_amount,
+  a.addon_activity_amount,
+  b.experiments
+from
+(
+select
+  upcode,
+  booking_ref,
+  min(BOOKING_TS_UTC) as datetime_funnel,
+  null as is_pm_offered,
+  null as is_pm_selected,
+  null as is_pm_applied,
+  null as is_pm_verified,
+  null as is_pm_fico_ge_550,
+  null as is_pm_approved,
+  null as is_pm_accepted,
+  true as is_booking,
+  min(CID) as cid,
+  null as AGENT_EMAIL,
+  min(BOOKING_TS_UTC) as datetime_booking,
+  min(TRIP_AMOUNT) as amount,
+  null as loanamount,
+  min(TRIP_INSURANCE) as insurance_amount,
+  min(CURRENCY_CODE) as CURRENCY_CODE,
+  min(
+      case when payment_option is null then null
+           when lower(payment_option) like '%deposit%' then 'deposit'
+           when lower(payment_option) like '%full%' then 'full'
+           when lower(payment_option) like '%hold%' then 'hold'
+           when lower(payment_option) like '%pay%monthly%' or lower(payment_option) like '%pay%over%time%' then 'pay monthly'
+           else 'other'
+           end
+  ) as payment_option,
+  min(CARD_BIN) as CARD_BIN,
+  max(BOOKING_PAGE) as BOOKING_PAGE,
+  null as TRAVEL_TYPE,
+  min(pax) as pax,
+  min(DEVICE_TYPE) as device_type,
+  min(TRIP_START_DATE) as travel_start,
+  min(TRIP_END_DATE) as travel_end,
+  array_agg(distinct exp) as EXPERIMENTS
+from
+  (select t.*, e.value as exp from "PRODUCTION_DB"."PUBLIC"."PARTNER_BOOKINGS" t, lateral flatten(input => t.experiments, outer => true) e)
+where ip not in ('66.201.49.52', '67.188.119.176', '73.170.79.37', '116.193.163.2', '189.217.16.37', '189.236.9.26', '203.190.154.36')
+group by 1,2
+) b
+left outer join c
+on b.upcode = c.upcode and b.booking_ref = c.booking_ref
+left outer join f
+on b.upcode = f.upcode and b.booking_ref = f.booking_ref
+left outer join h
+on b.upcode = h.upcode and b.booking_ref = h.booking_ref
+left outer join a
+on b.upcode = a.upcode and b.booking_ref = a.booking_ref
+),
+
+merged as (
+select p.PARTNER, unioned.*
+from
+(
+select * from k
+union all
+select * from wf
+union all
+select * from wb
+) unioned
+join "PRODUCTION_DB"."PUBLIC"."UPLIFT_PARTNER_CODES" p
+using (upcode)
+where left(p.upcode, 11) in (
+  'UP-63569511',  --spirit
+  'UP-49689944',  --swv
+  'UP-53917144',  --uov
+  'UP-98145157',  --uav
+  'UP-90246645',  --volaris
+  'UP-73591399',  --funjet
+  'UP-60226228',  --jetblue
+  'UP-38829922',  --kayak
+  'UP-43928860',  --ncl
+  'UP-50869689',  --rccl
+  'UP-20956569',  --carnival
+  'UP-70612684',  --WTH
+  'UP-98841375',  --amresorts, beachbound
+  'UP-72818792',  --rezmagic
+  'UP-46045662',  --skytours
+  'UP-24792348',  --applevacations
+  'UP-94385876',  --reservhotel
+  'UP-27938420',  --allegiant
+  'UP-34260246',  --caesars
+  'UP-65907954',  --cheapcaribbean
+  'UP-79975103',  --traveltripper
+  'UP-96591218',  --cruisedirect
+  'UP-44195078',  --bahamas
+  'UP-23846205',  --contiki
+  'UP-67995020',  --military fares
+  'UP-13472901',  --tripcentral (web data tracks only PM part, not PIF part)
+  'UP-92368476',  --aav (only kasa data, no web data)
+  'UP-60702809',  --vacation express
+  'UP-77507930',  --pleasant holidays
+  'UP-34161755',  --ice
+  'UP-77354831',  --travel planners international 
+  'UP-84436062',  --vacatia
+  'UP-45763525',  --trisept
+  'UP-35317284',  --webjet
+  'UP-45013799',  --DH Travel
+  'UP-38317171',  --lufthansa
+  'UP-87804775',  --alaskan dream cruises
+  'UP-64546641',  --crown cruise vacations
+  'UP-61884001',  --ascent - sun realty
+  'UP-61884002',  --ascent - white sail realty
+  'UP-61884003',  --ascent - luxury gulf rentals.com
+  'UP-44822917',  --universal hollywood vacation
+  'UP-79535399',  --travel genie
+  'UP-57912505',  --caribbean airlines
+  'UP-81988146',  --days of summer cruise
+  'UP-29920039',  --cruise connections
+  'UP-35445716',  --travel professionals international
+  'UP-34896924',  --travelonly
+  'UP-93684999'  --air canada
+  )
+)
